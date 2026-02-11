@@ -1,0 +1,16 @@
+# Configuration file for Snakemake workflow
+# Download and process SRA metagenome data
+
+# SRA run IDs to download
+runs:
+  - SRR10692699
+  - SRR10692860
+
+# Output directory for downloaded data
+outdir: test-metagenome
+
+# Number of threads for fasterq-dump
+threads: 8
+
+# Maximum size for prefetch (optional)
+max_size: 30G

@@ -34,8 +34,6 @@ for run in "${RUNS[@]}"; do
   echo ""
 done
 
-echo "Compressing FASTQ files..."
-gzip -f SRR10692699*.fastq SRR10692860*.fastq 2>/dev/null || true
 
 echo ""
 echo "=========================================="
