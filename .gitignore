@@ -1,0 +1,79 @@
+# Data directories
+test-metagenome/
+data/
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.sra
+*.sra.*
+
+# SRA Toolkit
+sratoolkit*/
+sratoolkit*.tar.gz
+tools/sratoolkit/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.uv-cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Slurm job outputs
+download_sra_*.out
+download_sra_*.err
+*.out
+*.err
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+
+# sbatch files
+*.sbatch
