@@ -4,7 +4,7 @@
 # SRA run IDs to download
 runs:
   - SRR10692699
-  - SRR10692860
+#  - SRR10692860
 
 # Output directory for downloaded data
 outdir: test-metagenome
@@ -14,3 +14,19 @@ threads: 8
 
 # Maximum size for prefetch (optional)
 max_size: 30G
+
+# Random seeds for seqtk downsampling (keeps runs reproducible)
+downsample_seeds:
+  - 11
+  - 22
+  - 33
+  - 44
+  - 55
+
+# Downsampling depth labels (read pairs)
+downsample_depths:
+  - 10M
+  - 20M
+  - 30M
+  - 40M
+  - 50M
