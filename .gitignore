@@ -77,3 +77,7 @@ download_sra_*.err
 
 # sbatch files
 *.sbatch
+
+# Snakemake files
+.snakemake/
+./snakemake-cache/
