@@ -1,4 +1,4 @@
-# Snakemake workflow: FastQC → MultiQC (raw) → fastp → MultiQC (trimmed)
+# Snakemake workflow: FastQC → MultiQC (raw) → fastp (trim+dedup) → MultiQC (trimmed)
 # Input: FASTQs in test-metagenome/downsample/SRR10692699 (or config runs)
 
 configfile: "config.yaml"
@@ -46,20 +46,11 @@ FASTP_JSON = expand(
     seed=SEEDS,
 )
 
-# fastp dedup outputs (for multiqc aggregation)
-FASTP_DEDUP_JSON = expand(
-    "dedup/fastp/{run}_{depth}_seed{seed}.fastp.json",
-    run=RUNS,
-    depth=DEPTH_LABELS,
-    seed=SEEDS,
-)
-
 rule all:
-    """Request raw MultiQC, trimmed MultiQC, and dedup MultiQC reports."""
+    """Request raw MultiQC and trimmed+dedup MultiQC reports."""
     input:
         "qc/multiqc_raw/multiqc_report.html",
         "qc/multiqc_trimmed/multiqc_report.html",
-        "qc/multiqc_dedup/multiqc_report.html",
 
 # ---------------------------------------------------------------------------
 # 1) FastQC on all raw FASTQs
@@ -92,10 +83,10 @@ rule multiqc_raw:
         "multiqc qc/fastqc_raw -o qc/multiqc_raw --force >> {log} 2>&1"
 
 # ---------------------------------------------------------------------------
-# 3) fastp: adapter trimming and QC (default parameters)
+# 3) fastp: adapter trimming, deduplication, and QC in one step
 # ---------------------------------------------------------------------------
 rule fastp:
-    """Trim adapters and run QC with fastp (default parameters)."""
+    """Trim adapters, deduplicate, and run QC with fastp (one step)."""
     input:
         r1=f"{OUTDIR}/downsample/{{run}}/{{run}}_{{depth}}_seed{{seed}}_R1.fastq",
         r2=f"{OUTDIR}/downsample/{{run}}/{{run}}_{{depth}}_seed{{seed}}_R2.fastq",
@@ -108,16 +99,16 @@ rule fastp:
         "logs/fastp/{run}_{depth}_seed{seed}.log",
     shell:
         "fastp -i {input.r1} -I {input.r2} "
-        "--detect_adapter_for_pe "
+        "--detect_adapter_for_pe --dedup "
         "-o {output.r1} -O {output.r2} "
         "-h {output.html} -j {output.json} "
         ">> {log} 2>&1"
 
 # ---------------------------------------------------------------------------
-# 4) MultiQC on fastp reports (JSON)
+# 4) MultiQC on fastp reports (trimmed + dedup, one report)
 # ---------------------------------------------------------------------------
 rule multiqc_trimmed:
-    """Aggregate fastp reports with MultiQC."""
+    """Aggregate fastp (trim+dedup) reports with MultiQC."""
     input:
         FASTP_JSON,
     output:
@@ -126,39 +117,3 @@ rule multiqc_trimmed:
         "logs/multiqc_trimmed.log",
     shell:
         "multiqc trimmed/fastp -o qc/multiqc_trimmed --force >> {log} 2>&1"
-
-# ---------------------------------------------------------------------------
-# 5) fastp deduplication on trimmed FASTQs
-# ---------------------------------------------------------------------------
-rule fastp_dedup:
-    """Deduplicate trimmed paired-end reads with fastp --dedup."""
-    input:
-        r1="trimmed/fastp/{run}_{depth}_seed{seed}_R1.fastq",
-        r2="trimmed/fastp/{run}_{depth}_seed{seed}_R2.fastq",
-    output:
-        r1="dedup/fastp/{run}_{depth}_seed{seed}_R1.fastq",
-        r2="dedup/fastp/{run}_{depth}_seed{seed}_R2.fastq",
-        html="dedup/fastp/{run}_{depth}_seed{seed}.fastp.html",
-        json="dedup/fastp/{run}_{depth}_seed{seed}.fastp.json",
-    log:
-        "logs/fastp_dedup/{run}_{depth}_seed{seed}.log",
-    shell:
-        "fastp -i {input.r1} -I {input.r2} "
-        "--dedup "
-        "-o {output.r1} -O {output.r2} "
-        "-h {output.html} -j {output.json} "
-        ">> {log} 2>&1"
-
-# ---------------------------------------------------------------------------
-# 6) MultiQC on fastp dedup reports
-# ---------------------------------------------------------------------------
-rule multiqc_dedup:
-    """Aggregate fastp dedup reports with MultiQC."""
-    input:
-        FASTP_DEDUP_JSON,
-    output:
-        report="qc/multiqc_dedup/multiqc_report.html",
-    log:
-        "logs/multiqc_dedup.log",
-    shell:
-        "multiqc dedup/fastp -o qc/multiqc_dedup --force >> {log} 2>&1"
