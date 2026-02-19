@@ -18,7 +18,7 @@ Snakemake workflow:
 ```bash
 module load seqtk
 uv run snakemake -s testdata_download_downsample.smk -n # -n : Dry run, just test if DAG can be build.
-uv run snakemake -s testdata_download_downsample.smk -j 1 # -j : specify the # of cores used in the workflow. This workflow is memory intensive and time-consuming. You can submit a sbatch job and see if 4 cores and 64G mem are faster.
+uv run snakemake -s testdata_download_downsample.smk -j 1 # -j : specify the # of cores used in the workflow. This workflow is memory intensive and time-consuming. You can submit a sbatch job and see if 4 cores and 64G mem are faster. (Only run this when you want to interactively run snakemake)
 ```
 Submit a batch job:
 ```bash
@@ -29,3 +29,8 @@ scancel <jobid> # cancel if needed # or use scancel -u $USER
 Once downloading and downsampling are finished, please head several files to double check the read pairs, see if the # are correct and if they are matched.
 
 
+### Fastq data quality control
+Please refer to ```fastq_qc.smk ``` to visualize the quality, trim adaptor and low quality reads, and deduplication.
+```bash
+sbatch run_fastq_qc.sbatch
+```
