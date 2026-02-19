@@ -7,6 +7,9 @@ data/
 *.fq.gz
 *.sra
 *.sra.*
+qc/
+trimmed/
+dedup/
 
 # SRA Toolkit
 sratoolkit*/
