@@ -1,4 +1,4 @@
-# Snakemake workflow: FastQC → MultiQC (raw) → fastp (trim+dedup) → MultiQC (trimmed)
+# Snakemake workflow: FastQC → MultiQC (raw) → fastp (trim+dedup) → FastQC (trimmed) → MultiQC (trimmed)
 # Input: FASTQs in test-metagenome/downsample/SRR10692699 (or config runs)
 
 configfile: "config.yaml"
@@ -26,24 +26,13 @@ FASTQC_RAW = expand(
     read=["1", "2"],
 )
 
-# fastp trimmed FASTQs and reports (one set per sample)
-FASTP_OUT_R1 = expand(
-    "trimmed/fastp/{run}_{depth}_seed{seed}_R1.fastq",
+# FastQC reports for trimmed+deduped FASTQs
+FASTQC_TRIMMED = expand(
+    "qc/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}_fastqc.html",
     run=RUNS,
     depth=DEPTH_LABELS,
     seed=SEEDS,
-)
-FASTP_OUT_R2 = expand(
-    "trimmed/fastp/{run}_{depth}_seed{seed}_R2.fastq",
-    run=RUNS,
-    depth=DEPTH_LABELS,
-    seed=SEEDS,
-)
-FASTP_JSON = expand(
-    "trimmed/fastp/{run}_{depth}_seed{seed}.fastp.json",
-    run=RUNS,
-    depth=DEPTH_LABELS,
-    seed=SEEDS,
+    read=["1", "2"],
 )
 
 rule all:
@@ -105,15 +94,30 @@ rule fastp:
         ">> {log} 2>&1"
 
 # ---------------------------------------------------------------------------
-# 4) MultiQC on fastp reports (trimmed + dedup, one report)
+# 4) FastQC on trimmed+deduped FASTQs
+# ---------------------------------------------------------------------------
+rule fastqc_trimmed:
+    """Run FastQC on each trimmed+deduped FASTQ."""
+    input:
+        fastq="trimmed/fastp/{run}_{depth}_seed{seed}_R{read}.fastq",
+    output:
+        html="qc/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}_fastqc.html",
+        zip="qc/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}_fastqc.zip",
+    log:
+        "logs/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}.log",
+    shell:
+        "fastqc -o qc/fastqc_trimmed {input.fastq} >> {log} 2>&1"
+
+# ---------------------------------------------------------------------------
+# 5) MultiQC on FastQC reports for trimmed+deduped FASTQs
 # ---------------------------------------------------------------------------
 rule multiqc_trimmed:
-    """Aggregate fastp (trim+dedup) reports with MultiQC."""
+    """Aggregate FastQC (trimmed+deduped) reports with MultiQC."""
     input:
-        FASTP_JSON,
+        FASTQC_TRIMMED,
     output:
         report="qc/multiqc_trimmed/multiqc_report.html",
     log:
         "logs/multiqc_trimmed.log",
     shell:
-        "multiqc trimmed/fastp -o qc/multiqc_trimmed --force >> {log} 2>&1"
+        "multiqc qc/fastqc_trimmed -o qc/multiqc_trimmed --force >> {log} 2>&1"
