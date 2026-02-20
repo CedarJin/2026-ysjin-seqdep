@@ -70,6 +70,7 @@ download_sra_*.err
 .env.local
 
 # Logs
+logs/
 *.log
 
 # Temporary files

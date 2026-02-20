@@ -20,8 +20,6 @@ downsample_seeds:
   - 11
   - 22
   - 33
-  - 44
-  - 55
 
 # Downsampling depth labels (read pairs)
 downsample_depths:

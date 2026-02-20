@@ -8,7 +8,7 @@ configfile: "config.yaml"
 RUNS = config.get("runs", ["SRR10692699"])
 OUTDIR = config.get("outdir", "test-metagenome")
 THREADS = config.get("threads", 8)
-SEEDS = [str(s) for s in config.get("downsample_seeds", [11, 22, 33, 44, 55])]
+SEEDS = [str(s) for s in config.get("downsample_seeds", [11, 22, 33])]
 DEPTH_LABELS = config.get("downsample_depths", ["10M", "20M", "30M", "40M", "50M"])
 DEPTH_TO_READS = {
     "10M": 10000000,
