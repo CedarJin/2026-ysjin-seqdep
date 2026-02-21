@@ -10,6 +10,7 @@ data/
 qc/
 trimmed/
 dedup/
+assembly/
 
 # SRA Toolkit
 sratoolkit*/

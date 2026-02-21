@@ -1,0 +1,11 @@
+# Conda environment for MEGAHIT metagenome assembly
+# Create with: conda env create -f env_megahit.yaml
+# Activate with: conda activate megahit
+
+name: megahit
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - megahit
