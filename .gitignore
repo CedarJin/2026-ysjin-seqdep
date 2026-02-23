@@ -11,6 +11,8 @@ qc/
 trimmed/
 dedup/
 assembly/
+reference/
+host_removed/
 
 # SRA Toolkit
 sratoolkit*/
