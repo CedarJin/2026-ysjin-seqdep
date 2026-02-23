@@ -1,6 +1,8 @@
 # Configuration file for Snakemake workflow
 # Download and process SRA metagenome data
 
+# for faster run, I commented out some runs and depths
+
 # SRA run IDs to download
 runs:
   - SRR10692699
@@ -18,13 +20,13 @@ max_size: 30G
 # Random seeds for seqtk downsampling (keeps runs reproducible)
 downsample_seeds:
   - 11
-  - 22
-  - 33
+#  - 22
+#  - 33
 
 # Downsampling depth labels (read pairs)
 downsample_depths:
-  - 10M
-  - 20M
-  - 30M
-  - 40M
+#  - 10M
+#  - 20M
+#  - 30M
+#  - 40M
   - 50M
