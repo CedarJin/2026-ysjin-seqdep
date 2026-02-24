@@ -11,7 +11,8 @@ This project uses SRA test data to benchmark metagenome depth effects. The pipel
 2. downsample to fixed depths,
 3. perform read QC and trimming,
 4. remove host reads,
-5. assemble metagenomes.
+5. assemble metagenomes,
+6. bin contigs and annotate bins.
 
 Before running workflows, confirm tools/environments are available:
 - `run_testdata_downsample.sbatch` and `run_fastq_qc.sbatch`: QC/downsample environment.
@@ -86,7 +87,11 @@ cd ../..
 The assembly workflow in `assembly.smk` now:
 1. builds a Bowtie2 index for the host reference,
 2. removes host-mapped reads from `trimmed/fastp`,
-3. assembles host-filtered read pairs with MEGAHIT.
+3. assembles host-filtered read pairs with MEGAHIT,
+4. maps host-filtered reads to contigs and estimates contig depth,
+5. generates microbial bins with MetaBAT2,
+6. runs CheckM2 quality prediction on bins,
+7. runs GTDB-Tk taxonomy classification for bins.
 
 Default host reference paths are:
 - `reference/human/GCF_000001405.40_GRCh38.p14_genomic.fna`
@@ -97,6 +102,51 @@ You can override these in `config.yaml`:
 host_reference_fasta: reference/human/GCF_000001405.40_GRCh38.p14_genomic.fna
 host_index_prefix: reference/human/GCF_000001405.40_GRCh38.p14_genomic
 ```
+
+Database setup (required for CheckM2 and GTDB-Tk):
+```bash
+# 1) Make sure environment contains required tools
+conda activate assemble
+conda env update -f env_assembly_bin.yaml
+
+# 2) Configure CheckM2 database
+# Download/extract the CheckM2 database according to your cluster instructions.
+# Then either set in config.yaml (recommended) or pass via environment/module setup.
+# Example:
+# checkm2_database_path: /path/to/CheckM2_database.dmnd
+checkm2 database --download --path reference/
+
+
+
+# 3) Download and configure GTDB-Tk database (save in reference/)
+mkdir -p reference/gtdbtk
+cd reference/gtdbtk
+
+# Primary source
+wget https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files/gtdbtk_package/full_package/gtdbtk_data.tar.gz
+
+# Mirror for Australia (use this if primary is unavailable)
+# wget https://data.gtdb.ecogenomic.org/releases/latest/auxillary_files/gtdbtk_package/full_package/gtdbtk_data.tar.gz
+
+# Unarchive
+tar xvzf gtdbtk_data.tar.gz
+
+# Set GTDB-Tk database path (replace release* with your extracted release folder)
+export GTDBTK_DATA_PATH=$PWD/release*
+cd ../..
+```
+
+Optional `config.yaml` setting for CheckM2 DB path:
+```yaml
+checkm2_database_path: reference/CheckM2_database/uniref100.KO.1.dmnd
+```
+
+Key outputs after `assembly.smk`:
+- host-filtered reads: `host_removed/`
+- assemblies: `assembly/megahit/.../final.contigs.fa`
+- bins: `bins/metabat2/`
+- CheckM2 reports: `qc/checkm2/.../quality_report.tsv`
+- GTDB-Tk results: `taxonomy/gtdbtk/`
 
 Run assembly:
 ```bash
