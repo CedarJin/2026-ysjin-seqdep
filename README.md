@@ -152,3 +152,6 @@ Run assembly:
 ```bash
 sbatch run_assembly.sbatch
 ```
+
+### DRAM Workflow for annotation
+Read the publication here: https://academic.oup.com/nar/article/48/16/8883/5884738?login=true
