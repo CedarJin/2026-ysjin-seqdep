@@ -132,8 +132,8 @@ wget https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files
 tar xvzf gtdbtk_data.tar.gz
 
 # Set GTDB-Tk database path (replace release* with your extracted release folder)
-export GTDBTK_DATA_PATH=$PWD/release*
-cd ../..
+export GTDBTK_DATA_PATH=/home/jys0914/2026-ysjin-seqdep/reference/gtdbtk/release226
+
 ```
 
 Optional `config.yaml` setting for CheckM2 DB path:
@@ -155,3 +155,22 @@ sbatch run_assembly.sbatch
 
 ### DRAM Workflow for annotation
 Read the publication here: https://academic.oup.com/nar/article/48/16/8883/5884738?login=true
+
+Install DRAM and prepare conda environment
+```bash
+wget https://raw.githubusercontent.com/WrightonLabCSU/DRAM/master/environment.yaml
+# replace the last row with: git+https://github.com/WrightonLabCSU/DRAM.git to fix syntax issues in DRAM-setup.py
+conda env create -f environment.yaml -n DRAM # conda create may cause issues
+
+# activate the environment
+conda activate DRAM
+pip install setuptools
+```
+
+Set up the DRAM database
+
+NOTE: Setting up DRAM can take a long time (up to 5 hours) and uses a large amount of memory (512 gb) by default. To use less memory you can use the --skip_uniref flag which will reduce memory usage to ~64 gb if you do not provide KEGG Genes and 128 gb if you do. Depending on the number of processors which you tell it to use (using the --threads argument) and the speed of your internet connection. On a less than 5 year old server with 10 processors it takes about 2 hours to process the data when databases do not need to be downloaded.
+
+```bash
+sbatch setup_dram_db.sbatch
+```

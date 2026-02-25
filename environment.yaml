@@ -20,4 +20,4 @@ dependencies:
   - parallel=20221122
   - pip
   - pip:
-    - DRAM-bio==1.5.0
+    - git+https://github.com/WrightonLabCSU/DRAM.git
