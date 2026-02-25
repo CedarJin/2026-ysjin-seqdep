@@ -15,7 +15,7 @@ HOST_INDEX_PREFIX = config.get(
     "host_index_prefix",
     "reference/human/GCF_000001405.40_GRCh38.p14_genomic",
 )
-CHECKM2_DB_PATH = config.get("checkm2_database_path", "")
+CHECKM2_DB_PATH = config.get("checkm2_database_path", "reference/CheckM2_database/uniref100.KO.1.dmnd")
 METABAT_MIN_CONTIG = config.get("metabat_min_contig", 1500)
 CONTIG_INDEX_EXT = ["1.bt2", "2.bt2", "3.bt2", "4.bt2", "rev.1.bt2", "rev.2.bt2"]
 
@@ -102,7 +102,10 @@ rule megahit:
     threads: THREADS
     shell:
         "megahit -1 {input.r1} -2 {input.r2} "
-
+        "-f "
+        "-o $(dirname {output.contigs}) "
+        "-t {threads} "
+        ">> {log} 2>&1"
 
 rule build_contig_index:
     """Build Bowtie2 index for assembled contigs (used for coverage mapping)."""
@@ -194,11 +197,8 @@ rule checkm2:
         "mkdir -p {params.outdir} logs/checkm2 && "
         "if [[ -n '{params.db_path}' ]]; then db_arg=\"--database_path {params.db_path}\"; else db_arg=\"\"; fi && "
         "checkm2 predict --threads {threads} --input {input.bins_dir} -x fa "
-        "--output-directory {params.outdir} $db_arg >> {log} 2>&1 && "
-        "report_file=$(ls {params.outdir}/*checkm2_report*.tsv 2>/dev/null | head -n 1) && "
-        "if [[ -z \"$report_file\" ]]; then "
-        "echo 'CheckM2 report file not found in output directory.' >> {log}; exit 1; "
-        "fi && cp \"$report_file\" {output.report}"
+        "--output-directory {params.outdir} --force $db_arg >> {log} 2>&1 && "
+        "test -s {output.report}"
 
 
 rule gtdbtk:
