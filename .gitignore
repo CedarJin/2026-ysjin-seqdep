@@ -13,6 +13,8 @@ dedup/
 assembly/
 reference/
 host_removed/
+bins/
+taxonomy/
 
 # SRA Toolkit
 sratoolkit*/
