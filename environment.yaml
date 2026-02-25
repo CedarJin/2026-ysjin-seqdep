@@ -19,5 +19,6 @@ dependencies:
   - ruby=3.1.2
   - parallel=20221122
   - pip
+  - setuptools<74
   - pip:
     - git+https://github.com/WrightonLabCSU/DRAM.git

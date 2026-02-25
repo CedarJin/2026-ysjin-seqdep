@@ -85,7 +85,6 @@ logs/
 
 
 # sbatch files
-*.sbatch
 
 # Snakemake files
 .snakemake/
