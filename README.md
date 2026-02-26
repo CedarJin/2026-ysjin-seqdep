@@ -1,7 +1,7 @@
 # 2026-ysjin-seqdep
 Microbiome metagenome and metatranscriptome sequencing depth
 
-## Test workflow using SRA data
+## SRA data download & downsample
 ### Set up sratoolkit
 
 Please refer to https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit to download and install sratoolkit.
@@ -52,8 +52,33 @@ Once downloading and downsampling are finished, spot-check several FASTQ files t
 - read counts match expected downsampling depth,
 - read pairing is consistent.
 
+##  Conda environment preperation
+### qc environment
+```bash
+# Export to a yaml file
+conda env export -n qc > env_qc.yaml
 
-### Fastq data quality control
+# Recreate from it (on same or another machine)
+conda env create -f env_qc.yaml -n qc
+```
+### assembly environment
+```bash
+conda env create -f env_assembly_bin.yaml -n assemble
+# if you already have the environment and want to update:
+conda env update -f env_assembly_bin.yaml
+```
+
+
+### DRAM environment
+```bash
+wget https://raw.githubusercontent.com/WrightonLabCSU/DRAM/master/environment.yaml 
+# replace the last row with: git+https://github.com/WrightonLabCSU/DRAM.git to fix syntax issues in DRAM-setup.py
+# add pip setuptools<74
+mv environment.yaml env_DRAM.yaml  
+conda env create -f env_DRAM.yaml -n DRAM
+```
+
+## Fastq data quality control
 `fastq_qc.smk` performs:
 1. FastQC on raw downsampled reads,
 2. MultiQC summary of raw read quality,
@@ -71,7 +96,7 @@ Run:
 sbatch run_fastq_qc.sbatch
 ```
 
-### Remove host genome
+## Remove host genome, assembly, binning
 
 Download the latest human reference genome from NCBI RefSeq
 (`GCF_000001405.40_GRCh38.p14`):
@@ -107,14 +132,14 @@ Database setup (required for CheckM2 and GTDB-Tk):
 ```bash
 # 1) Make sure environment contains required tools
 conda activate assemble
-conda env update -f env_assembly_bin.yaml
+# conda env update -f env_assembly_bin.yaml
 
 # 2) Configure CheckM2 database
 # Download/extract the CheckM2 database according to your cluster instructions.
 # Then either set in config.yaml (recommended) or pass via environment/module setup.
 # Example:
 # checkm2_database_path: /path/to/CheckM2_database.dmnd
-checkm2 database --download --path reference/
+checkm2 database --download --path reference/ # ONLY parent path!!
 
 
 
@@ -132,7 +157,7 @@ wget https://data.ace.uq.edu.au/public/gtdb/data/releases/latest/auxillary_files
 tar xvzf gtdbtk_data.tar.gz
 
 # Set GTDB-Tk database path (replace release* with your extracted release folder)
-export GTDBTK_DATA_PATH=/home/jys0914/2026-ysjin-seqdep/reference/gtdbtk/release226
+export GTDBTK_DATA_PATH=/home/jys0914/2026-ysjin-seqdep/reference/gtdbtk/release226 # MUST DO this!
 
 ```
 
@@ -153,24 +178,23 @@ Run assembly:
 sbatch run_assembly.sbatch
 ```
 
-### DRAM Workflow for annotation
+## DRAM Workflow for annotation
 Read the publication here: https://academic.oup.com/nar/article/48/16/8883/5884738?login=true
 
-Install DRAM and prepare conda environment
+### activate the environment
 ```bash
-wget https://raw.githubusercontent.com/WrightonLabCSU/DRAM/master/environment.yaml
-# replace the last row with: git+https://github.com/WrightonLabCSU/DRAM.git to fix syntax issues in DRAM-setup.py
-conda env create -f environment.yaml -n DRAM # conda create may cause issues
-
-# activate the environment
 conda activate DRAM
-pip install setuptools
 ```
 
-Set up the DRAM database
+### Set up the DRAM database
 
 NOTE: Setting up DRAM can take a long time (up to 5 hours) and uses a large amount of memory (512 gb) by default. To use less memory you can use the --skip_uniref flag which will reduce memory usage to ~64 gb if you do not provide KEGG Genes and 128 gb if you do. Depending on the number of processors which you tell it to use (using the --threads argument) and the speed of your internet connection. On a less than 5 year old server with 10 processors it takes about 2 hours to process the data when databases do not need to be downloaded.
 
 ```bash
-sbatch setup_dram_db.sbatch
+sbatch setup_dram_db.sbatch # BUGGY!!! 
+# Mofidied the script: 
+# /home/jys0914/.conda/envs/DRAM/lib/python3.10/site-packages/mag_annotator/database_processing.py
+# 1) Modified the 3 download dbCAN database URLs in the functions because the old ones don't work. 
+# 2) Modified dbCAN version
+# 3) Modified process_vogdb, merge_files(glob(path.join(hmm_dir, 'hmm/VOG*.hmm')), vog_hmms)
 ```

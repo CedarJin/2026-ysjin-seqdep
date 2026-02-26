@@ -1,4 +1,4 @@
-# Conda environment for assembly and binning: MEGAHIT, MetaBAT2, CheckM2, GTDB-Tk
+# Conda environment for assembly and binning: MEGAHIT, MetaBAT2, MaxBin2, CONCOCT, DAS_Tool, CheckM2, GTDB-Tk
 # Create with: conda env create -f env_assembly_bin.yaml
 # Activate with: conda activate assemble
 
@@ -10,6 +10,9 @@ channels:
 dependencies:
   - megahit
   - metabat2
+  - maxbin2
+  - concoct
+  - das_tool
   - checkm2
   - gtdbtk
   - bowtie2
