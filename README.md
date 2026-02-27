@@ -198,3 +198,31 @@ sbatch setup_dram_db.sbatch # BUGGY!!!
 # 2) Modified dbCAN version
 # 3) Modified process_vogdb, merge_files(glob(path.join(hmm_dir, 'hmm/VOG*.hmm')), vog_hmms)
 ```
+### Set up CAMPER database
+```bash
+git clone https://github.com/WrightonLabCSU/CAMPER.git
+cd CAMPER
+conda env update --name DRAM -f CAMPER_DRAMKit/environment.yaml
+pip install CAMPER_DRAMKit/dist/camper_dramkit-1.0.13.tar.gz
+```
+
+## get CAMPER database from release:
+https://github.com/WrightonLabCSU/CAMPER/releases
+
+
+## DEBUG
+database_handler.py
+	Fix typo: camper_fa_db_cotoffs → camper_fa_db_cutoffs.
+	•	Add handling for camper_tar_gz_loc: if detected in the wrapper, call process_camper_tar_gz to extract and process the .tar.gz, then pass the resulting paths to set_database_paths.
+	•	Update the database_handler wrapper to support the CAMPER-1.0.0 structure (instead of CAMPER-1.0.0-beta.1) and accommodate varying subdirectory layouts.
+	•	Implement more robust extraction logic in database_handler to ensure compatibility with CAMPER-1.0.0 and alternative directory structures.
+
+```bash
+
+DRAM-setup.py set_database_locations \
+  --camper_tar_gz_loc /home/jys0914/2026-ysjin-seqdep/reference/DRAM_data/CAMPER_v1.0.0.tar.gz
+
+# Verify
+DRAM-setup.py print_config 2>&1 | grep -i camper
+```
+
