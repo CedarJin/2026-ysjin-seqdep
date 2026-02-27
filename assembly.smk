@@ -234,12 +234,16 @@ rule concoct:
     output:
         bins_dir=directory("bins/concoct/{run}_{depth}_seed{seed}"),
     params:
-        workdir="bins/concoct/{run}_{depth}_seed{seed}",
+        # Intermediate files go into a work/ subdirectory so that
+        # Fasta_to_Contig2Bin.sh later only sees the numbered bin FASTAs
+        # (0.fa, 1.fa, …) and not contigs_10k.fa, which has .concoct_part_X
+        # chunk IDs that are absent from the original assembly.
+        workdir="bins/concoct/{run}_{depth}_seed{seed}/work",
     log:
         "logs/concoct/{run}_{depth}_seed{seed}.log",
     threads: THREADS
     shell:
-        "mkdir -p {params.workdir} logs/concoct && "
+        "mkdir -p {params.workdir} {output.bins_dir} logs/concoct && "
         # Step 1: cut contigs into 10 kb chunks for uniform coverage estimation
         "cut_up_fasta.py {input.contigs} -c 10000 -o 0 --merge_last "
         "-b {params.workdir}/contigs_10k.bed > {params.workdir}/contigs_10k.fa 2>> {log} && "
@@ -254,7 +258,7 @@ rule concoct:
         # Step 4: merge chunk-level clusters back to original contigs
         "merge_cutup_clustering.py {params.workdir}/concoct_out/clustering_gt1000.csv "
         "> {params.workdir}/clustering_merged.csv 2>> {log} && "
-        # Step 5: extract per-bin FASTA files
+        # Step 5: extract per-bin FASTA files directly into bins_dir
         "extract_fasta_bins.py {input.contigs} {params.workdir}/clustering_merged.csv "
         "--output_path {output.bins_dir}/ >> {log} 2>&1"
 
@@ -281,14 +285,20 @@ rule dastool:
     threads: THREADS
     shell:
         "mkdir -p bins/dastool/{wildcards.run}_{wildcards.depth}_seed{wildcards.seed} logs/dastool && "
-        # Convert each binner's output directory to a scaffold-to-bin TSV
-        # MetaBAT2 outputs .fa, MaxBin2 outputs .fasta, CONCOCT outputs .fa
-        "Fasta_to_Contig2Bin.sh -i {input.metabat2_dir} -e fa "
-        "> {params.outprefix}_metabat2.tsv 2>> {log} && "
-        "Fasta_to_Contig2Bin.sh -i {input.maxbin2_dir} -e fasta "  
-        "> {params.outprefix}_maxbin2.tsv 2>> {log} && "
-        "Fasta_to_Contig2Bin.sh -i {input.concoct_dir} -e fa "
-        "> {params.outprefix}_concoct.tsv 2>> {log} && "
+        # Convert each binner's output directory to a scaffold-to-bin TSV.
+        # Pipe through awk to normalise contig names to the first whitespace-delimited
+        # token: MetaBAT2 headers carry tab-separated depth fields (4 columns) and
+        # CONCOCT preserves the full MEGAHIT header (spaces in column 1), both of
+        # which cause DAS_Tool's fread to see >2 columns and crash.
+        "Fasta_to_Contig2Bin.sh -i {input.metabat2_dir} -e fa 2>> {log} | "
+        "awk -F'\\t' 'BEGIN{{OFS=\"\\t\"}}{{split($1,a,\" \"); print a[1],$NF}}' "
+        "> {params.outprefix}_metabat2.tsv && "
+        "Fasta_to_Contig2Bin.sh -i {input.maxbin2_dir} -e fasta 2>> {log} | "
+        "awk -F'\\t' 'BEGIN{{OFS=\"\\t\"}}{{split($1,a,\" \"); print a[1],$NF}}' "
+        "> {params.outprefix}_maxbin2.tsv && "
+        "Fasta_to_Contig2Bin.sh -i {input.concoct_dir} -e fa 2>> {log} | "
+        "awk -F'\\t' 'BEGIN{{OFS=\"\\t\"}}{{split($1,a,\" \"); print a[1],$NF}}' "
+        "> {params.outprefix}_concoct.tsv && "
         # Run DAS_Tool: select best bins and write refined FASTA files
         "DAS_Tool "
         "-i {params.outprefix}_metabat2.tsv,"
