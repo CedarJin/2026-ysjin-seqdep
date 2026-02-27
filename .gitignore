@@ -17,6 +17,7 @@ bins/
 taxonomy/
 hmm/
 annotation/
+CAMPER/
 
 # SRA Toolkit
 sratoolkit*/
