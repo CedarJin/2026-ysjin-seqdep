@@ -6,7 +6,7 @@
 #SBATCH --partition=low
 #SBATCH --account=publicgrp
 #SBATCH --cpus-per-task=24
-#SBATCH --mem=128G
+#SBATCH --mem=512G
 #SBATCH --time=24:00:00
 
 ### Email notifications
@@ -40,11 +40,6 @@ fi
 
 # Activate DRAM env (must be created first: conda env create -f DRAM_env.yaml -n DRAM)
 conda activate DRAM
-
-# Optional: use project .venv for snakemake
-if [[ -f ".venv/bin/activate" ]]; then
-  source ".venv/bin/activate"
-fi
 
 echo "[$(date)] Starting DRAM annotation job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
