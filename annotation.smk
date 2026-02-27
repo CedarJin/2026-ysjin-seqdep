@@ -16,7 +16,7 @@ configfile: "config.yaml"
 RUNS = config.get("runs", ["SRR10692699"])
 SEEDS = [str(s) for s in config.get("downsample_seeds", [11, 22, 33])]
 DEPTH_LABELS = config.get("downsample_depths", ["10M", "20M", "30M", "40M", "50M"])
-THREADS = 24
+THREADS = 16
 # Extension used for DAS_Tool bins (must match dastool rule in assembly.smk)
 BIN_EXT = config.get("bin_extension", "fa")
 

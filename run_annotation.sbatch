@@ -5,8 +5,8 @@
 #SBATCH --error=slurm_annotation_%j.err
 #SBATCH --partition=low
 #SBATCH --account=publicgrp
-#SBATCH --cpus-per-task=24
-#SBATCH --mem=512G
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=128G
 #SBATCH --time=24:00:00
 
 ### Email notifications
