@@ -19,6 +19,7 @@ dependencies:
   - ruby=3.1.2
   - parallel=20221122
   - pip
+  - snakemake
   - setuptools<74
   - pip:
     - git+https://github.com/WrightonLabCSU/DRAM.git
