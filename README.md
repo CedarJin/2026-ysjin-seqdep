@@ -211,7 +211,7 @@ https://github.com/WrightonLabCSU/CAMPER/releases
 
 
 ## DEBUG
-database_handler.py
+site-packages/mag_annotator/database_handler.py
 	Fix typo: camper_fa_db_cotoffs → camper_fa_db_cutoffs.
 	•	Add handling for camper_tar_gz_loc: if detected in the wrapper, call process_camper_tar_gz to extract and process the .tar.gz, then pass the resulting paths to set_database_paths.
 	•	Update the database_handler wrapper to support the CAMPER-1.0.0 structure (instead of CAMPER-1.0.0-beta.1) and accommodate varying subdirectory layouts.
