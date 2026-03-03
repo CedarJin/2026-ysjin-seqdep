@@ -1,5 +1,6 @@
 # Data directories
 test-metagenome/
+rawdata/
 data/
 *.fastq
 *.fastq.gz
