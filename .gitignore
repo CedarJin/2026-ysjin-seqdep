@@ -16,6 +16,9 @@ reference/
 host_removed/
 bins/
 taxonomy/
+hmm/
+annotation/
+CAMPER/
 
 # SRA Toolkit
 sratoolkit*/

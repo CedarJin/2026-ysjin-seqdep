@@ -30,3 +30,9 @@ downsample_depths:
 #  - 30M
 #  - 40M
   - 50M
+
+# CheckM2 database path
+checkm2_database_path: reference/CheckM2_database/uniref100.KO.1.dmnd
+
+# File extension used for MetaBAT2 bin FASTA files
+bin_extension: fa
