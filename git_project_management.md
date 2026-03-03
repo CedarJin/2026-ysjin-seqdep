@@ -1,6 +1,7 @@
 # 2026-ysjin-seqdep
 
-## This branck is hive-real-data.
+## This branch is hive!!
+
 ### common git commands
 ```bash
 git branch --show current # check which branch you are --show-current
@@ -50,5 +51,5 @@ git fetch origin
 git merge origin/main
 git add -A
 git commit -m "hive: small adjustments for real run"
-git push origin hive
+git push origin hive # if this is the first push, git push --set-upstream origin hive
 ```
