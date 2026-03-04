@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=dram_annotate
-#SBATCH --output=slurm_annotation_%j.out
-#SBATCH --error=slurm_annotation_%j.err
+#SBATCH --job-name=dram_af_annotate
+#SBATCH --output=slurm_annotation_af_%j.out
+#SBATCH --error=slurm_annotation_af_%j.err
 #SBATCH --partition=low
 #SBATCH --account=publicgrp
 #SBATCH --cpus-per-task=32
@@ -13,15 +13,15 @@
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
 #SBATCH --mail-type=END,FAIL
 
-# NOTE: Memory requirements depend on databases used:
-#   - with UniRef90: ~220 GB RAM
-#   - KOfam only, no UniRef90: <50 GB RAM
-# Adjust --mem above accordingly.
+# NOTE:
+#   - This workflow uses FragGeneScanRs + DRAM annotate_genes (assembly-free path).
+#   - You can tune FragGeneScanRs model in config.yaml with:
+#       fraggenescanrs_model: complete   # or train/high_error/454_30/illumina_10
 
 set -euo pipefail
 
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="annotation.smk"
+SMK_FILE="annotation_assembly_free.smk"
 
 cd "${PROJECT_DIR}"
 
@@ -38,10 +38,10 @@ else
   source "$(dirname "${CONDA_EXE}")/../etc/profile.d/conda.sh"
 fi
 
-# Activate DRAM env (must be created first: conda env create -f DRAM_env.yaml -n DRAM)
+# Activate DRAM env
 conda activate DRAM
 
-echo "[$(date)] Starting DRAM annotation job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
+echo "[$(date)] Starting DRAM assembly-free annotation job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
 
 python -m snakemake -s "${SMK_FILE}" --unlock || true
@@ -52,4 +52,4 @@ python -m snakemake \
   --rerun-incomplete \
   --printshellcmds
 
-echo "[$(date)] DRAM annotation job finished"
+echo "[$(date)] DRAM assembly-free annotation job finished"

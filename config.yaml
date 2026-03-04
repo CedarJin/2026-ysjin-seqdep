@@ -36,3 +36,7 @@ checkm2_database_path: reference/CheckM2_database/uniref100.KO.1.dmnd
 
 # File extension used for MetaBAT2 bin FASTA files
 bin_extension: fa
+
+# FragGeneScanRs model for assembly-free DRAM workflow
+# Options depend on FragGeneScanRs build; common: complete, train, high_error, illumina_10, 454_30
+fraggenescanrs_model: illumina_10

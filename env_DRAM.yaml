@@ -3,10 +3,14 @@ channels:
   - bioconda
 dependencies:
   - python=3.10
+  - pip
+  - setuptools>=68,<74
+  - wheel
   - pandas=1.5.2
   - pytest=7.2.0
   - scikit-bio=0.5.7
   - prodigal=2.6.3
+  - frag_gene_scan_rs
   - mmseqs2==13.45111
   - hmmer=3.3.2
   - trnascan-se=2.0.11
@@ -18,8 +22,6 @@ dependencies:
   - networkx=2.8.8
   - ruby=3.1.2
   - parallel=20221122
-  - pip
   - snakemake
-  - setuptools<74
   - pip:
     - git+https://github.com/WrightonLabCSU/DRAM.git

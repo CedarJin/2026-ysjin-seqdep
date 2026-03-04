@@ -186,6 +186,12 @@ Read the publication here: https://academic.oup.com/nar/article/48/16/8883/58847
 conda activate DRAM
 ```
 
+### Annotation run: early validation and fail-fast
+Before running DRAM annotate (which can take 14+ hours), the workflow now:
+1. **Validates bins vs quality report**: If bin names in the bins directory do not exactly match the `Name` column in CheckM2 `quality_report.tsv` (e.g. extra/missing bins or number/string mismatch), the job fails immediately with a clear error instead of failing later in distill.
+2. **Normalizes quality report**: Writes `quality_report_for_dram.tsv` with the `Name` column forced to string so DRAM/distill do not hit mixed-type errors (e.g. Altair chart `SchemaValidationError` from `4` vs `'4'`).
+3. **Fails on missing glycan/dbCAN description**: A wrapper runs `DRAM.py annotate` and exits as soon as DRAM logs "No descriptions were found for your id's ... dbcan_description", so you do not run 14+ hours only to discover the issue at the end.
+
 ### Set up the DRAM database
 
 NOTE: Setting up DRAM can take a long time (up to 5 hours) and uses a large amount of memory (512 gb) by default. To use less memory you can use the --skip_uniref flag which will reduce memory usage to ~64 gb if you do not provide KEGG Genes and 128 gb if you do. Depending on the number of processors which you tell it to use (using the --threads argument) and the speed of your internet connection. On a less than 5 year old server with 10 processors it takes about 2 hours to process the data when databases do not need to be downloaded.
