@@ -14,11 +14,11 @@ The DRAM annotation comparison also uses `200`, `500`, `1000`, and `2500` bp.
 
 ## Part 1: Alignment Scan
 
-Source table: [alignment_scan.tsv](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/contig_len_alignment_scan/SRR10692699_50M_seed11/alignment_scan.tsv)
 
 ### Overall alignment rate
 
-Figure: [alignment_scan.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/contig_len_alignment_scan/SRR10692699_50M_seed11/alignment_scan.svg)
+Figure:![alignment_scan](https://hackmd.io/_uploads/SkotX_L5bg.svg)
+
 
 Interpretation:
 
@@ -28,7 +28,7 @@ Interpretation:
 
 ### Contig count
 
-Figure: [contig_count_scan.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/contig_len_alignment_scan/SRR10692699_50M_seed11/contig_count_scan.svg)
+Figure: ![contig_count_scan](https://hackmd.io/_uploads/S1g3jm_L5-g.svg)
 
 Interpretation:
 
@@ -38,7 +38,8 @@ Interpretation:
 
 ### Total assembly bp
 
-Figure: [total_bp_scan.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/contig_len_alignment_scan/SRR10692699_50M_seed11/total_bp_scan.svg)
+Figure: ![total_bp_scan](https://hackmd.io/_uploads/SJe07_Iq-x.svg)
+
 
 Interpretation:
 
@@ -48,7 +49,8 @@ Interpretation:
 
 ### Average contig length
 
-Figure: [avg_bp_scan.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/contig_len_alignment_scan/SRR10692699_50M_seed11/avg_bp_scan.svg)
+Figure: ![avg_bp_scan](https://hackmd.io/_uploads/HJjJEuL5Zl.svg)
+
 
 Interpretation:
 
@@ -58,7 +60,8 @@ Interpretation:
 
 ### Maximum contig length
 
-Figure: [max_bp_scan.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/contig_len_alignment_scan/SRR10692699_50M_seed11/max_bp_scan.svg)
+Figure: ![max_bp_scan](https://hackmd.io/_uploads/S1OWEu89Zl.svg)
+
 
 Interpretation:
 
@@ -68,7 +71,7 @@ Interpretation:
 
 ### N50
 
-Figure: [n50_bp_scan.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/contig_len_alignment_scan/SRR10692699_50M_seed11/n50_bp_scan.svg)
+Figure: ![n50_bp_scan](https://hackmd.io/_uploads/SJ874uIqZg.svg)
 
 Interpretation:
 
@@ -85,7 +88,6 @@ Interpretation:
 
 ## Part 2: DRAM Annotation Scan
 
-Source table: [dram_minlen_summary.tsv](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/dram_contig_minlen_summary/SRR10692699_50M_seed11/dram_minlen_summary.tsv)
 
 Note on metric definitions:
 
@@ -97,7 +99,7 @@ Note on metric definitions:
 
 ### Raw hit counts
 
-Figure: [dram_minlen_raw_hits.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/dram_contig_minlen_summary/SRR10692699_50M_seed11/dram_minlen_raw_hits.svg)
+Figure: ![dram_minlen_raw_hits](https://hackmd.io/_uploads/r1u_NuLqbe.svg)
 
 Interpretation:
 
@@ -108,7 +110,8 @@ Interpretation:
 
 ### Unique ID counts
 
-Figure: [dram_minlen_unique_ids.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/dram_contig_minlen_summary/SRR10692699_50M_seed11/dram_minlen_unique_ids.svg)
+Figure: ![dram_minlen_unique_ids](https://hackmd.io/_uploads/B19cN_U5-x.svg)
+
 
 Interpretation:
 
@@ -119,7 +122,8 @@ Interpretation:
 
 ### Runtime
 
-Figure: [dram_minlen_runtime.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/dram_contig_minlen_summary/SRR10692699_50M_seed11/dram_minlen_runtime.svg)
+Figure: ![dram_minlen_runtime](https://hackmd.io/_uploads/rye6V_85-g.svg)
+
 
 Interpretation:
 
@@ -130,7 +134,8 @@ Interpretation:
 
 ### Functional module count
 
-Figure: [dram_minlen_functional_modules.svg](/group/datalabgrp/ctbrown/ysjin/2026-ysjin-seqdep/analysis/dram_contig_minlen_summary/SRR10692699_50M_seed11/dram_minlen_functional_modules.svg)
+Figure: ![dram_minlen_functional_modules](https://hackmd.io/_uploads/SJJJruU9bg.svg)
+
 
 Interpretation:
 
