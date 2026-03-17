@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=dram_af_filter
-#SBATCH --output=slurm_annotation_af_%j.out
-#SBATCH --error=slurm_annotation_af_%j.err
+#SBATCH --job-name=dram_contigs_annotate
+#SBATCH --output=slurm_annotation_contigs_%j.out
+#SBATCH --error=slurm_annotation_contigs_%j.err
 #SBATCH --partition=low
 #SBATCH --account=publicgrp
 #SBATCH --cpus-per-task=32
@@ -14,14 +14,15 @@
 #SBATCH --mail-type=END,FAIL
 
 # NOTE:
-#   - This workflow uses FragGeneScanRs + DRAM annotate_genes (assembly-free path).
-#   - You can tune FragGeneScanRs model in config.yaml with:
-#       fraggenescanrs_model: complete   # or train/high_error/454_30/illumina_10
+#   - This workflow runs DRAM on assembled contigs from MEGAHIT:
+#       assembly/megahit/{run}_{depth}_seed{seed}/final.contigs.fa
+#   - To disable CAMPER annotation, set in config.yaml:
+#       dram_use_camper: false
 
 set -euo pipefail
 
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="annotation_assembly_free.smk"
+SMK_FILE="annotation_contigs.smk"
 
 cd "${PROJECT_DIR}"
 
@@ -41,7 +42,7 @@ fi
 # Activate DRAM env
 conda activate DRAM
 
-echo "[$(date)] Starting DRAM assembly-free annotation job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
+echo "[$(date)] Starting DRAM contig annotation job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
 
 python -m snakemake -s "${SMK_FILE}" --unlock || true
@@ -50,8 +51,6 @@ python -m snakemake \
   -s "${SMK_FILE}" \
   --cores "${SLURM_CPUS_PER_TASK:-1}" \
   --rerun-incomplete \
-  --printshellcmds \
-  annotation/dram_assembly_free/SRR10692699_50M_seed11/genes_predicted.filter_stats.tsv
+  --printshellcmds
 
-
-echo "[$(date)] DRAM assembly-free annotation job finished"
+echo "[$(date)] DRAM contig annotation job finished"

@@ -20,6 +20,8 @@ DRAM_CONFIG = config.get(
 )
 DRAM_PY = config.get("dram_py", "/home/jys0914/.conda/envs/DRAM/bin/DRAM.py")
 FGS_MODEL = config.get("fraggenescanrs_model", "illumina_10")
+FGS_MIN_SCORE = float(config.get("fraggenescanrs_min_score", 1.30))
+FGS_SCAN_SCORES = [float(x) for x in config.get("fraggenescanrs_scan_scores", [1.20, 1.25, 1.30, 1.35])]
 
 DRAM_AF_ANNOTATIONS = expand(
     "annotation/dram_assembly_free/{run}_{depth}_seed{seed}/annotations.tsv",
@@ -53,21 +55,65 @@ rule fastq_to_reads_fasta:
         "logs/dram_assembly_free/reads_to_fasta_{run}_{depth}_seed{seed}.log",
     shell:
         "mkdir -p $(dirname {output.reads_fa}) && "
+        "( "
         "awk 'NR%4==1{{print \">\" substr($0,2)}} NR%4==2{{print}}' {input.r1} > {output.reads_fa} && "
         "awk 'NR%4==1{{print \">\" substr($0,2)}} NR%4==2{{print}}' {input.r2} >> {output.reads_fa} "
-        ">> {log} 2>&1"
+        ") >> {log} 2>&1"
 
 
 rule predict_genes_fraggenescanrs:
-    """Predict proteins directly from read-derived FASTA with FragGeneScanRs."""
+    """Predict proteins and metadata directly from read-derived FASTA with FragGeneScanRs."""
     input:
         reads_fa="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/reads.fa",
     output:
-        genes_faa="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.faa",
+        genes_faa_raw="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.raw.faa",
+        genes_meta="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.meta.tsv",
     log:
         "logs/dram_assembly_free/fraggenescanrs_{run}_{depth}_seed{seed}.log",
+    threads: THREADS
     shell:
-        "python scripts/run_fraggenescanrs.py {input.reads_fa} {output.genes_faa} {FGS_MODEL} "
+        "python scripts/run_fraggenescanrs.py {input.reads_fa} {output.genes_faa_raw} {FGS_MODEL} "
+        "--meta-out {output.genes_meta} --threads {threads} "
+        ">> {log} 2>&1"
+
+
+rule filter_genes_by_fraggenescanrs_score:
+    """Filter predicted proteins by FragGeneScanRs metadata score."""
+    input:
+        genes_faa_raw="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.raw.faa",
+        genes_meta="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.meta.tsv",
+    output:
+        genes_faa="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.faa",
+        filter_stats="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.filter_stats.tsv",
+    params:
+        min_score=FGS_MIN_SCORE,
+    log:
+        "logs/dram_assembly_free/filter_genes_{run}_{depth}_seed{seed}.log",
+    shell:
+        "python scripts/filter_fraggenescanrs_by_score.py "
+        "--faa-in {input.genes_faa_raw} "
+        "--meta-in {input.genes_meta} "
+        "--faa-out {output.genes_faa} "
+        "--stats-out {output.filter_stats} "
+        "--min-score {params.min_score} "
+        ">> {log} 2>&1"
+
+
+rule scan_fraggenescanrs_score_thresholds:
+    """Scan multiple FragGeneScanRs score thresholds and report keep/remove fractions."""
+    input:
+        genes_meta="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.meta.tsv",
+    output:
+        summary="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes_predicted.score_scan.tsv",
+    params:
+        thresholds=",".join(str(x) for x in FGS_SCAN_SCORES),
+    log:
+        "logs/dram_assembly_free/score_scan_{run}_{depth}_seed{seed}.log",
+    shell:
+        "python scripts/scan_fraggenescanrs_scores.py "
+        "--meta-in {input.genes_meta} "
+        "--summary-out {output.summary} "
+        "--thresholds {params.thresholds} "
         ">> {log} 2>&1"
 
 
@@ -79,19 +125,22 @@ rule dram_annotate_genes:
         annotations="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/annotations.tsv",
         genes_annotated="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/genes.faa",
     params:
-        outdir="annotation/dram_assembly_free/{run}_{depth}_seed{seed}",
+        tmp_outdir="annotation/dram_assembly_free/{run}_{depth}_seed{seed}/.dram_annotate_tmp",
     log:
         "logs/dram_assembly_free/annotate_genes_{run}_{depth}_seed{seed}.log",
     threads: THREADS
     shell:
-        "rm -rf {params.outdir}/working_dir && "
+        "rm -rf {params.tmp_outdir} && "
         "{DRAM_PY} annotate_genes "
         "-i {input.genes_faa} "
-        "-o {params.outdir} "
+        "-o {params.tmp_outdir} "
         "--threads {threads} "
         "--use_camper "
         "--verbose "
-        ">> {log} 2>&1"
+        ">> {log} 2>&1 && "
+        "mv -f {params.tmp_outdir}/annotations.tsv {output.annotations} && "
+        "mv -f {params.tmp_outdir}/genes.faa {output.genes_annotated} && "
+        "rm -rf {params.tmp_outdir}"
 
 
 rule fix_dram_af_annotations_for_distill:

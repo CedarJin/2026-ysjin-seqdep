@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
-Run FragGeneScanRs with a compatibility fallback across CLI styles.
-
-Inputs:
-  1) FASTA with reads/fragments
-  2) output FAA path
-  3) model (default: complete)
+Run FragGeneScanRs with compatibility fallbacks across CLI styles.
 
 Usage:
-  python scripts/run_fraggenescanrs.py reads.fa genes.faa [model]
+  python scripts/run_fraggenescanrs.py reads.fa genes.faa [model] [--meta-out metadata.tsv] [--threads N]
 """
 
+import argparse
 import shutil
 import subprocess
 import sys
@@ -30,14 +26,40 @@ def run_command(cmd, stdin_path=None, stdout_path=None):
             stdout_handle.close()
 
 
-def main():
-    if len(sys.argv) < 3:
-        print("Usage: run_fraggenescanrs.py <reads.fa> <genes.faa> [model]", file=sys.stderr)
-        return 2
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run FragGeneScanRs and write predicted proteins (and optional metadata)."
+    )
+    parser.add_argument("reads_fa", help="Input reads/fragments in FASTA format")
+    parser.add_argument("genes_faa", help="Output predicted proteins (FAA)")
+    parser.add_argument(
+        "model",
+        nargs="?",
+        default="complete",
+        help="FragGeneScanRs training model (default: complete)",
+    )
+    parser.add_argument(
+        "--meta-out",
+        default=None,
+        help="Optional output path for FragGeneScanRs metadata (-m)",
+    )
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=1,
+        help="Number of threads for FragGeneScanRs (-p)",
+    )
+    return parser.parse_args()
 
-    reads_fa = Path(sys.argv[1])
-    out_faa = Path(sys.argv[2])
-    model = sys.argv[3] if len(sys.argv) > 3 else "complete"
+
+def main():
+    args = parse_args()
+
+    reads_fa = Path(args.reads_fa)
+    out_faa = Path(args.genes_faa)
+    model = args.model
+    meta_out = Path(args.meta_out) if args.meta_out else None
+    threads = max(1, int(args.threads))
 
     if not reads_fa.exists():
         print(f"Error: input FASTA not found: {reads_fa}", file=sys.stderr)
@@ -49,22 +71,63 @@ def main():
         return 1
 
     out_faa.parent.mkdir(parents=True, exist_ok=True)
+    if meta_out is not None:
+        meta_out.parent.mkdir(parents=True, exist_ok=True)
 
-    # Style 1 (documented backward-compatible mode): stdin -> stdout
+    # When metadata is requested, use explicit file-output style to guarantee .meta creation.
+    if meta_out is not None:
+        code, err = run_command(
+            [
+                exe,
+                "-s",
+                str(reads_fa),
+                "-t",
+                model,
+                "-p",
+                str(threads),
+                "-a",
+                str(out_faa),
+                "-m",
+                str(meta_out),
+            ]
+        )
+        if (
+            code == 0
+            and out_faa.exists()
+            and out_faa.stat().st_size > 0
+            and meta_out.exists()
+            and meta_out.stat().st_size > 0
+        ):
+            return 0
+        print("Error: FragGeneScanRs failed while writing metadata.", file=sys.stderr)
+        print(err.strip(), file=sys.stderr)
+        return 1
+
+    # Style 1 (legacy compatibility mode): stdin -> stdout (proteins only)
     code, err = run_command([exe, "-t", model], stdin_path=str(reads_fa), stdout_path=str(out_faa))
     if code == 0 and out_faa.exists() and out_faa.stat().st_size > 0:
         return 0
 
-    # Style 2 (subcommand style in some builds): predict
+    # Style 2 (explicit file-output mode)
     tmp_err = err
+    code, err = run_command(
+        [exe, "-s", str(reads_fa), "-t", model, "-p", str(threads), "-a", str(out_faa)]
+    )
+    if code == 0 and out_faa.exists() and out_faa.stat().st_size > 0:
+        return 0
+
+    # Style 3 (subcommand mode in some builds)
+    style2_err = err
     code, err = run_command([exe, "predict", "-t", model, "-s", str(reads_fa), "-o", str(out_faa)])
     if code == 0 and out_faa.exists() and out_faa.stat().st_size > 0:
         return 0
 
-    print("Error: FragGeneScanRs failed in both CLI modes.", file=sys.stderr)
+    print("Error: FragGeneScanRs failed in all tested CLI modes.", file=sys.stderr)
     print("Mode1 stderr:", file=sys.stderr)
     print(tmp_err.strip(), file=sys.stderr)
     print("Mode2 stderr:", file=sys.stderr)
+    print(style2_err.strip(), file=sys.stderr)
+    print("Mode3 stderr:", file=sys.stderr)
     print(err.strip(), file=sys.stderr)
     return 1
 
