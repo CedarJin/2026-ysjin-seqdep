@@ -19,6 +19,7 @@ hmm/
 annotation/
 CAMPER/
 analysis/
+abundance/
 
 # SRA Toolkit
 sratoolkit*/

@@ -1,0 +1,13 @@
+# Conda environment for abundance assessment with featureCounts
+# Create with: conda env create -f env_abundance.yaml
+# Activate with: conda activate abundance
+
+name: abundance
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - subread
+  - samtools
+  - snakemake
