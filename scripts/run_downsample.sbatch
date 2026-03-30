@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#SBATCH --job-name=testdata_downsample
-#SBATCH --output=slurm_testdata_downsample_%j.out
-#SBATCH --error=slurm_testdata_downsample_%j.err
+#SBATCH --job-name=downsample
+#SBATCH --output=slurm_downsample_%j.out
+#SBATCH --error=slurm_downsample_%j.err
 #SBATCH --partition=low
-#SBATCH --account=ctbrowngrp
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=64G
-#SBATCH --time=12:00:00
+#SBATCH --account=publicgrp
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=256G
+#SBATCH --time=72:00:00
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
@@ -18,9 +18,10 @@ set -euo pipefail
 
 # Load required modules
 module load seqtk
+module load conda/base/latest
 
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="testdata_download_downsample.smk"
+SMK_FILE="scripts/downsample.smk"
 
 cd "${PROJECT_DIR}"
 
@@ -28,7 +29,12 @@ cd "${PROJECT_DIR}"
 export XDG_CACHE_HOME="${PROJECT_DIR}/.cache"
 mkdir -p "${XDG_CACHE_HOME}"
 
-# Activate project environment if present.
+# Initialize and activate conda env with python + snakemake.
+# shellcheck disable=SC1091
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate qc
+
+# Optional: activate project venv if present.
 if [[ -f ".venv/bin/activate" ]]; then
   # shellcheck disable=SC1091
   source ".venv/bin/activate"
@@ -36,6 +42,8 @@ fi
 
 echo "[$(date)] Starting Snakemake job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
+
+python -m snakemake -s "${SMK_FILE}" --unlock || true
 
 python -m snakemake \
   -s "${SMK_FILE}" \
