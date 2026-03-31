@@ -4,10 +4,10 @@
 #SBATCH --output=slurm_fastq_qc_%j.out
 #SBATCH --error=slurm_fastq_qc_%j.err
 #SBATCH --partition=low
-#SBATCH --account=ctbrowngrp
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
-#SBATCH --time=08:00:00
+#SBATCH --account=publicgrp
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=128G
+#SBATCH --time=72:00:00
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
@@ -20,7 +20,7 @@ set -euo pipefail
 # qc stays on PATH so fastqc and fastp are found when rules run.
 
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="fastq_qc.smk"
+SMK_FILE="scripts/fastq_qc.smk"
 
 cd "${PROJECT_DIR}"
 
@@ -34,6 +34,10 @@ if [[ -z "${CONDA_EXE:-}" ]]; then
   if [[ -x "${CONDA_BASE}/bin/conda" ]]; then
     # shellcheck disable=SC1090,SC1091
     source "${CONDA_BASE}/etc/profile.d/conda.sh"
+  else
+    module load conda/base/latest
+    # shellcheck disable=SC1091
+    source "$(conda info --base)/etc/profile.d/conda.sh"
   fi
 else
   # shellcheck disable=SC1090,SC1091

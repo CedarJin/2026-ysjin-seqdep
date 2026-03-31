@@ -1,123 +1,122 @@
-# Snakemake workflow: FastQC → MultiQC (raw) → fastp (trim+dedup) → FastQC (trimmed) → MultiQC (trimmed)
-# Input: FASTQs in test-metagenome/downsample/SRR10692699 (or config runs)
+# Workflow:
+# FastQC (raw) -> MultiQC (raw) -> fastp -> FastQC (post-fastp) -> MultiQC (post-fastp)
 
-configfile: "config.yaml"
+import glob
+import os
 
-RUNS = config.get("runs", ["SRR10692699"])
-OUTDIR = config.get("outdir", "test-metagenome")
-SEEDS = [str(s) for s in config.get("downsample_seeds", [11, 22, 33])]
-DEPTH_LABELS = config.get("downsample_depths", ["10M", "20M", "30M", "40M", "50M"])
+configfile: "env/config.yaml"
 
-# All raw FASTQs (one per read)
-RAW_FASTQS = expand(
-    f"{OUTDIR}/downsample/{{run}}/{{run}}_{{depth}}_seed{{seed}}_R{{read}}.fastq",
-    run=RUNS,
-    depth=DEPTH_LABELS,
-    seed=SEEDS,
-    read=["1", "2"],
-)
+OMICS = config.get("omics", ["metaG", "metaT"])
+DEPTHS = config.get("downsample_depths", ["10M", "20M", "30M", "40M"])
+SEEDS = [str(s) for s in config.get("downsample_seeds", [11, 22, 33, 44, 55])]
+FASTQC_THREADS = int(config.get("fastqc_threads", 2))
+FASTP_THREADS = int(config.get("fastp_threads", 4))
+QC_ROOT = "qc/downsample"
+TRIM_ROOT = "trimmed/downsample/fastp"
+LOG_ROOT = "logs/downsample"
 
-# FastQC reports (one per FASTQ)
-FASTQC_RAW = expand(
-    "qc/fastqc_raw/{run}_{depth}_seed{seed}_R{read}_fastqc.html",
-    run=RUNS,
-    depth=DEPTH_LABELS,
-    seed=SEEDS,
-    read=["1", "2"],
-)
 
-# FastQC reports for trimmed+deduped FASTQs
-FASTQC_TRIMMED = expand(
-    "qc/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}_fastqc.html",
-    run=RUNS,
-    depth=DEPTH_LABELS,
-    seed=SEEDS,
-    read=["1", "2"],
-)
+def sample_ids(omic):
+    dirs = [d for d in glob.glob(f"rawdata/downsample/{omic}/*") if os.path.isdir(d)]
+    return sorted(os.path.basename(d) for d in dirs)
+
+
+SAMPLES = {omic: sample_ids(omic) for omic in OMICS}
+ACTIVE_OMICS = [omic for omic in OMICS if SAMPLES[omic]]
+
+
+def raw_fastqc_htmls(omic):
+    return [
+        f"{QC_ROOT}/fastqc_raw/{omic}/{s}_{d}_seed{k}_R{r}_fastqc.html"
+        for s in SAMPLES[omic] for d in DEPTHS for k in SEEDS for r in ("1", "2")
+    ]
+
+
+def post_fastqc_htmls(omic):
+    return [
+        f"{QC_ROOT}/fastqc_post/{omic}/{s}_{d}_seed{k}_R{r}_fastqc.html"
+        for s in SAMPLES[omic] for d in DEPTHS for k in SEEDS for r in ("1", "2")
+    ]
+
 
 rule all:
-    """Request raw MultiQC and trimmed+dedup MultiQC reports."""
     input:
-        "qc/multiqc_raw/multiqc_report.html",
-        "qc/multiqc_trimmed/multiqc_report.html",
+        expand(f"{QC_ROOT}/multiqc_raw/{{omic}}/multiqc_raw_report.html", omic=ACTIVE_OMICS),
+        expand(f"{QC_ROOT}/multiqc_post/{{omic}}/multiqc_post_report.html", omic=ACTIVE_OMICS),
 
-# ---------------------------------------------------------------------------
-# 1) FastQC on all raw FASTQs
-# ---------------------------------------------------------------------------
+
 rule fastqc_raw:
-    """Run FastQC on each raw FASTQ."""
     input:
-        fastq=f"{OUTDIR}/downsample/{{run}}/{{run}}_{{depth}}_seed{{seed}}_R{{read}}.fastq",
+        "rawdata/downsample/{omic}/{sample}/{sample}_{depth}_seed{seed}_R{read}.fastq"
     output:
-        html="qc/fastqc_raw/{run}_{depth}_seed{seed}_R{read}_fastqc.html",
-        zip="qc/fastqc_raw/{run}_{depth}_seed{seed}_R{read}_fastqc.zip",
+        html=f"{QC_ROOT}/fastqc_raw/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R{{read}}_fastqc.html",
+        zip=f"{QC_ROOT}/fastqc_raw/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R{{read}}_fastqc.zip"
     log:
-        "logs/fastqc/{run}_{depth}_seed{seed}_R{read}.log",
+        f"{LOG_ROOT}/fastqc_raw/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R{{read}}.log"
+    threads:
+        FASTQC_THREADS
     shell:
-        "fastqc -o qc/fastqc_raw {input.fastq} "
-        ">> {log} 2>&1"
+        f"mkdir -p {QC_ROOT}/fastqc_raw/{{wildcards.omic}} && "
+        f"fastqc -t {{threads}} -o {QC_ROOT}/fastqc_raw/{{wildcards.omic}} {{input}} >> {{log}} 2>&1"
 
-# ---------------------------------------------------------------------------
-# 2) MultiQC on raw FastQC reports
-# ---------------------------------------------------------------------------
+
 rule multiqc_raw:
-    """Aggregate raw FastQC reports with MultiQC."""
     input:
-        FASTQC_RAW,
+        lambda wc: raw_fastqc_htmls(wc.omic)
     output:
-        report="qc/multiqc_raw/multiqc_report.html",
+        report=f"{QC_ROOT}/multiqc_raw/{{omic}}/multiqc_raw_report.html"
     log:
-        "logs/multiqc_raw.log",
+        f"{LOG_ROOT}/multiqc_raw/{{omic}}.log"
     shell:
-        "multiqc qc/fastqc_raw -o qc/multiqc_raw --force >> {log} 2>&1"
+        f"mkdir -p {QC_ROOT}/multiqc_raw/{{wildcards.omic}} && "
+        f"multiqc {QC_ROOT}/fastqc_raw/{{wildcards.omic}} -o {QC_ROOT}/multiqc_raw/{{wildcards.omic}} "
+        "-n multiqc_raw_report --force >> {log} 2>&1"
 
-# ---------------------------------------------------------------------------
-# 3) fastp: adapter trimming, deduplication, and QC in one step
-# ---------------------------------------------------------------------------
+
 rule fastp:
-    """Trim adapters, deduplicate, and run QC with fastp (one step)."""
     input:
-        r1=f"{OUTDIR}/downsample/{{run}}/{{run}}_{{depth}}_seed{{seed}}_R1.fastq",
-        r2=f"{OUTDIR}/downsample/{{run}}/{{run}}_{{depth}}_seed{{seed}}_R2.fastq",
+        r1="rawdata/downsample/{omic}/{sample}/{sample}_{depth}_seed{seed}_R1.fastq",
+        r2="rawdata/downsample/{omic}/{sample}/{sample}_{depth}_seed{seed}_R2.fastq"
     output:
-        r1="trimmed/fastp/{run}_{depth}_seed{seed}_R1.fastq",
-        r2="trimmed/fastp/{run}_{depth}_seed{seed}_R2.fastq",
-        html="trimmed/fastp/{run}_{depth}_seed{seed}.fastp.html",
-        json="trimmed/fastp/{run}_{depth}_seed{seed}.fastp.json",
+        r1=f"{TRIM_ROOT}/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R1.fastq",
+        r2=f"{TRIM_ROOT}/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R2.fastq",
+        html=f"{TRIM_ROOT}/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}.fastp.html",
+        json=f"{TRIM_ROOT}/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}.fastp.json"
     log:
-        "logs/fastp/{run}_{depth}_seed{seed}.log",
+        f"{LOG_ROOT}/fastp/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}.log"
+    params:
+        dedup_opt=lambda wc: "--dedup" if wc.omic == "metaG" else ""
+    threads:
+        FASTP_THREADS
     shell:
-        "fastp -i {input.r1} -I {input.r2} "
-        "--detect_adapter_for_pe --dedup "
-        "-o {output.r1} -O {output.r2} "
-        "-h {output.html} -j {output.json} "
-        ">> {log} 2>&1"
+        f"mkdir -p {TRIM_ROOT}/{{wildcards.omic}} && "
+        "fastp -w {threads} -i {input.r1} -I {input.r2} --detect_adapter_for_pe {params.dedup_opt} "
+        "-o {output.r1} -O {output.r2} -h {output.html} -j {output.json} >> {log} 2>&1"
 
-# ---------------------------------------------------------------------------
-# 4) FastQC on trimmed+deduped FASTQs
-# ---------------------------------------------------------------------------
-rule fastqc_trimmed:
-    """Run FastQC on each trimmed+deduped FASTQ."""
-    input:
-        fastq="trimmed/fastp/{run}_{depth}_seed{seed}_R{read}.fastq",
-    output:
-        html="qc/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}_fastqc.html",
-        zip="qc/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}_fastqc.zip",
-    log:
-        "logs/fastqc_trimmed/{run}_{depth}_seed{seed}_R{read}.log",
-    shell:
-        "fastqc -o qc/fastqc_trimmed {input.fastq} >> {log} 2>&1"
 
-# ---------------------------------------------------------------------------
-# 5) MultiQC on FastQC reports for trimmed+deduped FASTQs
-# ---------------------------------------------------------------------------
-rule multiqc_trimmed:
-    """Aggregate FastQC (trimmed+deduped) reports with MultiQC."""
+rule fastqc_post:
     input:
-        FASTQC_TRIMMED,
+        f"{TRIM_ROOT}/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R{{read}}.fastq"
     output:
-        report="qc/multiqc_trimmed/multiqc_report.html",
+        html=f"{QC_ROOT}/fastqc_post/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R{{read}}_fastqc.html",
+        zip=f"{QC_ROOT}/fastqc_post/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R{{read}}_fastqc.zip"
     log:
-        "logs/multiqc_trimmed.log",
+        f"{LOG_ROOT}/fastqc_post/{{omic}}/{{sample}}_{{depth}}_seed{{seed}}_R{{read}}.log"
+    threads:
+        FASTQC_THREADS
     shell:
-        "multiqc qc/fastqc_trimmed -o qc/multiqc_trimmed --force >> {log} 2>&1"
+        f"mkdir -p {QC_ROOT}/fastqc_post/{{wildcards.omic}} && "
+        f"fastqc -t {{threads}} -o {QC_ROOT}/fastqc_post/{{wildcards.omic}} {{input}} >> {{log}} 2>&1"
+
+
+rule multiqc_post:
+    input:
+        lambda wc: post_fastqc_htmls(wc.omic)
+    output:
+        report=f"{QC_ROOT}/multiqc_post/{{omic}}/multiqc_post_report.html"
+    log:
+        f"{LOG_ROOT}/multiqc_post/{{omic}}.log"
+    shell:
+        f"mkdir -p {QC_ROOT}/multiqc_post/{{wildcards.omic}} && "
+        f"multiqc {QC_ROOT}/fastqc_post/{{wildcards.omic}} -o {QC_ROOT}/multiqc_post/{{wildcards.omic}} "
+        "-n multiqc_post_report --force >> {log} 2>&1"
