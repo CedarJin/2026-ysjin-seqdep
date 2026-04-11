@@ -18,8 +18,8 @@ LOG_ROOT = "logs/downsample"
 
 def sample_ids(omic):
     dirs = [d for d in glob.glob(f"rawdata/downsample/{omic}/*") if os.path.isdir(d)]
-    return sorted(os.path.basename(d) for d in dirs)
-
+    return sorted(s for s in (os.path.basename(d) for d in dirs) if s != "MT0002")
+## delete if s != MT0002 when you want to add it back
 
 SAMPLES = {omic: sample_ids(omic) for omic in OMICS}
 ACTIVE_OMICS = [omic for omic in OMICS if SAMPLES[omic]]

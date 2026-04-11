@@ -1,7 +1,7 @@
 # 2026-ysjin-seqdep
 Microbiome metagenome and metatranscriptome sequencing depth for real data
 
-## Real metagenomic data
+## Metagenomic data
 
 ### Sample metadata
 
@@ -31,7 +31,7 @@ The script reads `metaG_rawdata_links.tsv`, downloads each pair of reads, and sa
 `MG{NNNN}_R1.fastq.gz` / `MG{NNNN}_R2.fastq.gz` in the output directory.
 Files that already exist are skipped automatically (safe to re-run).
 
-## Real metatranscriptomic data
+## Metatranscriptomic data
 
 ### Sample metadata
 
@@ -63,3 +63,18 @@ The script reads `rawdata/metaT/metaT_rawdata_links.tsv`, downloads each pair of
 Files that already exist are skipped automatically (safe to re-run).
 
 ---
+
+## Remove host genome
+
+### Download the latest human reference genome from NCBI RefSeq
+(`GCF_000001405.40_GRCh38.p14`):
+```bash
+mkdir -p reference/human
+cd reference/human
+wget -O GCF_000001405.40_GRCh38.p14_genomic.fna.gz \
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+gunzip -f GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+cd ../..
+```
+
+### 

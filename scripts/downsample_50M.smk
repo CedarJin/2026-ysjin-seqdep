@@ -1,14 +1,14 @@
 # Downsample paired reads in rawdata/metaG and rawdata/metaT.
-# Config: env/config.yaml
+# Config: env/config_50M.yaml
 
 import glob
 import os
 
-configfile: "env/config.yaml"
+configfile: "env/config_50M.yaml"
 
 OMICS = config.get("omics", ["metaG", "metaT"])
 SEEDS = [str(s) for s in config.get("downsample_seeds", [11, 22, 33, 44, 55])]
-DEPTHS = config.get("downsample_depths", ["10M", "20M", "30M", "40M", "50M"])
+DEPTHS = config.get("downsample_depths", ["50M"])
 THREADS = int(config.get("downsample_threads", 1))
 
 

@@ -19,6 +19,7 @@ taxonomy/
 hmm/
 annotation/
 CAMPER/
+cleandata/
 
 # SRA Toolkit
 sratoolkit*/
