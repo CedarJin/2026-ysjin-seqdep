@@ -1,22 +1,53 @@
 #!/usr/bin/env bash
-# Download metatranscriptomic raw FASTQ files from rawdata/metaT/metaT_rawdata_links.tsv,
+# Download metatranscriptomic raw FASTQ files from a metaT rawdata links TSV,
 # renaming them to MT{NNNN}_R1.fastq.gz / MT{NNNN}_R2.fastq.gz.
 #
 # Usage:
-#   bash download_metaT_rawdata.sh [output_dir]
+#   bash scripts/download_metaT_rawdata.sh                         # rawdata/metaT
+#   bash scripts/download_metaT_rawdata.sh rawdata/metaT_batch2    # rawdata/metaT_batch2
+#   bash scripts/download_metaT_rawdata.sh /your/path              # legacy: default links, custom output
 #
-# Default output directory: rawdata/metaT
+# If the target directory contains metaT_rawdata_links.tsv or one *_rawdata_links*.tsv
+# file, that file is used. Otherwise, the default rawdata/metaT links TSV is used.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-LINKS_TSV="${PROJECT_ROOT}/rawdata/metaT/metaT_rawdata_links.tsv"
 OUTDIR="${1:-${PROJECT_ROOT}/rawdata/metaT}"
+
+if [[ "$OUTDIR" != /* ]]; then
+    OUTDIR="${PROJECT_ROOT}/${OUTDIR}"
+fi
+
+DEFAULT_LINKS_TSV="${PROJECT_ROOT}/rawdata/metaT/metaT_rawdata_links.tsv"
+LINKS_TSV=""
+if [[ -f "${OUTDIR}/metaT_rawdata_links.tsv" ]]; then
+    LINKS_TSV="${OUTDIR}/metaT_rawdata_links.tsv"
+else
+    shopt -s nullglob
+    link_candidates=("${OUTDIR}"/*_rawdata_links*.tsv)
+    shopt -u nullglob
+    if [[ "${#link_candidates[@]}" -eq 1 ]]; then
+        LINKS_TSV="${link_candidates[0]}"
+    elif [[ "${#link_candidates[@]}" -eq 0 ]]; then
+        LINKS_TSV="${DEFAULT_LINKS_TSV}"
+    else
+        echo "ERROR: Multiple rawdata links TSV files found in: $OUTDIR" >&2
+        printf '  %s\n' "${link_candidates[@]}" >&2
+        exit 1
+    fi
+fi
+
+if [[ ! -f "$LINKS_TSV" ]]; then
+    echo "ERROR: Rawdata links TSV not found: $LINKS_TSV" >&2
+    exit 1
+fi
 
 mkdir -p "$OUTDIR"
 
 echo "Downloading metatranscriptomic FASTQ files to: $OUTDIR"
+echo "Using rawdata links TSV: $LINKS_TSV"
 echo "----------------------------------------------------"
 
 # Skip header line; iterate rows and assign sequential MT IDs

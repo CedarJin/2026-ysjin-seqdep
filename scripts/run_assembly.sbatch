@@ -1,13 +1,14 @@
 #!/bin/bash
 
 #SBATCH --job-name=assembly
-#SBATCH --output=slurm_assembly_%j.out
-#SBATCH --error=slurm_assembly_%j.err
+#SBATCH --output=slurm_assembly_%A_%a.out
+#SBATCH --error=slurm_assembly_%A_%a.err
 #SBATCH --partition=low
 #SBATCH --account=publicgrp
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128G
-#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=256G
+#SBATCH --time=5-00:00:00
+#SBATCH --array=0-3
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
@@ -16,7 +17,9 @@
 set -euo pipefail
 
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="assembly.smk"
+SMK_FILE="scripts/assembly.smk"
+SEEDS=(22 33 44 55)
+export SEED_FILTER="${SEEDS[${SLURM_ARRAY_TASK_ID}]}"
 
 cd "${PROJECT_DIR}"
 
@@ -33,7 +36,7 @@ else
   source "$(dirname "${CONDA_EXE}")/../etc/profile.d/conda.sh"
 fi
 
-# Activate assemble env (must be created first: conda env create -f env_assembly_bin.yaml)
+# Activate assemble env (must be created first: conda env create -f env/env_assemble.yaml -n assemble)
 conda activate assemble
 
 # Optional: use project .venv for snakemake if you prefer that Python
@@ -41,7 +44,7 @@ if [[ -f ".venv/bin/activate" ]]; then
   source ".venv/bin/activate"
 fi
 
-echo "[$(date)] Starting Snakemake assembly job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
+echo "[$(date)] Starting Snakemake assembly job ${SLURM_JOB_ID} array ${SLURM_ARRAY_TASK_ID} (seed=${SEED_FILTER}) on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
 
 python -m snakemake -s "${SMK_FILE}" --unlock || true

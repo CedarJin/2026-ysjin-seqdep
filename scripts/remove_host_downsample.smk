@@ -3,7 +3,7 @@ import os
 import re
 
 # Remove host reads from all paired FASTQ files in downsampled metaG/metaT data.
-# Input:  rawdata/downsample/{omic}/{sample}/*_R1.fastq and *_R2.fastq
+# Input:  rawdata/downsample/{raw_omic}/{sample}/*_R1.fastq and *_R2.fastq
 # Output: cleandata/{omic}/{sample}/{prefix}_R1.fastq and {prefix}_R2.fastq
 
 RAW_ROOT = "rawdata/downsample"

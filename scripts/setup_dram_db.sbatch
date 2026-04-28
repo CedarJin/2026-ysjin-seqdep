@@ -7,7 +7,7 @@
 #SBATCH --account=publicgrp
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=512G
-#SBATCH --time=12:00:00
+#SBATCH --time=18:00:00
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
@@ -42,8 +42,8 @@ else
   source "$(dirname "${CONDA_EXE}")/../etc/profile.d/conda.sh"
 fi
 
-# Activate DRAM env with conda.
-conda activate DRAM
+# Activate dram env with conda.
+conda activate dram
 
 echo "[$(date)] Starting DRAM database setup on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
