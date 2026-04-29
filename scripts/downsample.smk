@@ -21,9 +21,7 @@ def depth_to_reads(depth):
 
 def list_samples(omic):
     r1 = glob.glob(f"rawdata/{omic}/*_R1.fastq")
-    return sorted(s for s in {os.path.basename(p).replace("_R1.fastq", "") for p in r1} if s != "MT0002") 
-
-### delete "if s !=M0002" when you want to add it back
+    return sorted(os.path.basename(p).replace("_R1.fastq", "") for p in r1)
 
 
 SAMPLES = {omic: list_samples(omic) for omic in OMICS}

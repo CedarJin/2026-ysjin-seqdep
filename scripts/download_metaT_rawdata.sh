@@ -50,6 +50,28 @@ echo "Downloading metatranscriptomic FASTQ files to: $OUTDIR"
 echo "Using rawdata links TSV: $LINKS_TSV"
 echo "----------------------------------------------------"
 
+download_fastq() {
+    local label="$1"
+    local url="$2"
+    local output="$3"
+    local partial="${output}.part"
+
+    if [[ -s "$output" ]]; then
+        echo "  ${label} already exists, skipping: $output"
+        return
+    fi
+
+    if [[ -f "$output" ]]; then
+        echo "  ${label} exists but is empty/incomplete, re-downloading: $output"
+        rm -f "$output"
+    fi
+
+    rm -f "$partial"
+    echo "  Downloading ${label} -> $output"
+    wget -q --show-progress -O "$partial" "$url"
+    mv "$partial" "$output"
+}
+
 # Skip header line; iterate rows and assign sequential MT IDs
 idx=0
 while IFS=$'\t' read -r internal_id customer_label url_r1 url_r2; do
@@ -66,19 +88,8 @@ while IFS=$'\t' read -r internal_id customer_label url_r1 url_r2; do
 
     echo "[${mt_id}] ${customer_label} (${internal_id})"
 
-    if [[ -f "$out_r1" ]]; then
-        echo "  R1 already exists, skipping: $out_r1"
-    else
-        echo "  Downloading R1 -> $out_r1"
-        wget -q --show-progress -O "$out_r1" "$url_r1"
-    fi
-
-    if [[ -f "$out_r2" ]]; then
-        echo "  R2 already exists, skipping: $out_r2"
-    else
-        echo "  Downloading R2 -> $out_r2"
-        wget -q --show-progress -O "$out_r2" "$url_r2"
-    fi
+    download_fastq "R1" "$url_r1" "$out_r1"
+    download_fastq "R2" "$url_r2" "$out_r2"
 
 done < "$LINKS_TSV"
 
