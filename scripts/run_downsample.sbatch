@@ -3,10 +3,10 @@
 #SBATCH --job-name=downsample
 #SBATCH --output=slurm_downsample_%j.out
 #SBATCH --error=slurm_downsample_%j.err
-#SBATCH --partition=low
+#SBATCH --partition=high
 #SBATCH --account=publicgrp
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=256G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=128G
 #SBATCH --time=72:00:00
 
 ### Email notifications

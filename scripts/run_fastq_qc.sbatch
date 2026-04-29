@@ -3,15 +3,21 @@
 #SBATCH --job-name=fastq_qc
 #SBATCH --output=slurm_fastq_qc_%j.out
 #SBATCH --error=slurm_fastq_qc_%j.err
-#SBATCH --partition=low
+#SBATCH --partition=high
 #SBATCH --account=publicgrp
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=256G
-#SBATCH --time=72:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=128G      
+   
+#SBATCH --time=48:00:00
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
 #SBATCH --mail-type=END,FAIL
+
+
+#### 16CPU and 256G mem for all runs
+
+
 
 set -euo pipefail
 

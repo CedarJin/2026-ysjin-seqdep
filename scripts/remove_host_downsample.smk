@@ -2,11 +2,11 @@ import glob
 import os
 import re
 
-# Remove host reads from all paired FASTQ files in downsampled metaG/metaT data.
-# Input:  rawdata/downsample/{raw_omic}/{sample}/*_R1.fastq and *_R2.fastq
+# Remove host reads from all paired FASTQ files after fastp trimming.
+# Input:  trimmed/downsample/fastp/{omic}/{sample}_{depth}_seed{seed}_R1.fastq and *_R2.fastq
 # Output: cleandata/{omic}/{sample}/{prefix}_R1.fastq and {prefix}_R2.fastq
 
-RAW_ROOT = "rawdata/downsample"
+TRIM_ROOT = "trimmed/downsample/fastp"
 OMICS = ["metaG", "metaT"]
 HOST_REFERENCE_FASTA = "reference/human/GCF_000001405.40_GRCh38.p14_genomic.fna"
 HOST_INDEX_PREFIX = "reference/human/GCF_000001405.40_GRCh38.p14_genomic"
@@ -18,14 +18,17 @@ HOST_INDEX_FILES = expand("{prefix}.{ext}", prefix=HOST_INDEX_PREFIX, ext=INDEX_
 
 
 def list_prefixes(omic):
-    pattern = os.path.join(RAW_ROOT, omic, "*", "*_R1.fastq")
+    pattern = os.path.join(TRIM_ROOT, omic, "*_R1.fastq")
     prefixes = []
     for r1 in glob.glob(pattern):
         r2 = r1.replace("_R1.fastq", "_R2.fastq")
         if not os.path.exists(r2):
             continue
-        sample = os.path.basename(os.path.dirname(r1))
         prefix = os.path.basename(r1).replace("_R1.fastq", "")
+        sample_match = re.match(r"(.+?)_[^_]+_seed\d+$", prefix)
+        if not sample_match:
+            continue
+        sample = sample_match.group(1)
         if SEED_FILTER:
             match = re.search(r"_seed(\d+)$", prefix)
             if not match or match.group(1) not in SEED_FILTER:
@@ -68,8 +71,8 @@ rule build_host_index:
 
 rule remove_host_reads:
     input:
-        r1=lambda wc: f"{RAW_ROOT}/{wc.omic}/{wc.sample}/{wc.prefix}_R1.fastq",
-        r2=lambda wc: f"{RAW_ROOT}/{wc.omic}/{wc.sample}/{wc.prefix}_R2.fastq",
+        r1=lambda wc: f"{TRIM_ROOT}/{wc.omic}/{wc.prefix}_R1.fastq",
+        r2=lambda wc: f"{TRIM_ROOT}/{wc.omic}/{wc.prefix}_R2.fastq",
         idx=HOST_INDEX_FILES
     output:
         r1="cleandata/{omic}/{sample}/{prefix}_R1.fastq",

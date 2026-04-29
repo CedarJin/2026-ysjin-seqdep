@@ -2,7 +2,7 @@
 #SBATCH --job-name=rawdata_fqc_mqc
 #SBATCH --output=slurm_rawdata_fastqc_multiqc_%j.out
 #SBATCH --error=slurm_rawdata_fastqc_multiqc_%j.err
-#SBATCH --partition=low
+#SBATCH --partition=high
 #SBATCH --account=publicgrp
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
