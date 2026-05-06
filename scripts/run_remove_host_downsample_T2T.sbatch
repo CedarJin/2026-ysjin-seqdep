@@ -1,40 +1,35 @@
 #!/bin/bash
 
-#SBATCH --job-name=fastq_qc
-#SBATCH --output=slurm_fastq_qc_%j.out
-#SBATCH --error=slurm_fastq_qc_%j.err
+#SBATCH --job-name=rmhost_downsample_T2T_array
+#SBATCH --output=slurm_rmhost_downsample_T2T_array_%j.out
+#SBATCH --error=slurm_rmhost_downsample_T2T_array_%j.err
 #SBATCH --partition=low
 #SBATCH --account=publicgrp
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=256G      
-   
-#SBATCH --time=48:00:00
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=256G
+#SBATCH --time=24:00:00
+# #SBATCH --array=0-4
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
-#SBATCH --mail-type=END,FAIL
-
-
-#### 16CPU and 256G mem for all runs
-
-
+#SBATCH --mail-type=ALL
 
 set -euo pipefail
 
-# Use both: conda qc (fastqc, fastp) and project .venv (snakemake, multiqc).
-# Order: activate qc first, then .venv so .venv's Python/snakemake take precedence;
-# qc stays on PATH so fastqc and fastp are found when rules run.
-
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="scripts/fastq_qc.smk"
+SMK_FILE="scripts/remove_host_downsample_T2T.smk"
+
+# Array seeds: remaining seeds after pilot seed11.
+# SEEDS=(11 22 33 44 55)
+# export SEED_FILTER="${SEEDS[${SLURM_ARRAY_TASK_ID}]}"
 
 cd "${PROJECT_DIR}"
 
-# Keep caches local to the project to avoid home permission issues.
+# Keep caches local to project (avoid home permission issues).
 export XDG_CACHE_HOME="${PROJECT_DIR}/.cache"
 mkdir -p "${XDG_CACHE_HOME}"
 
-# Initialize conda so "conda activate" works in this script (required in non-interactive shells).
+# Initialize conda in non-interactive shell.
 if [[ -z "${CONDA_EXE:-}" ]]; then
   CONDA_BASE="${HOME}/anaconda3"
   if [[ -x "${CONDA_BASE}/bin/conda" ]]; then
@@ -50,20 +45,18 @@ else
   source "$(dirname "${CONDA_EXE}")/../etc/profile.d/conda.sh"
 fi
 
-# Activate conda qc env (fastqc, fastp).
-conda activate qc
+# assemble env contains bowtie2/samtools.
+conda activate assemble
 
-# Then activate project .venv (snakemake, multiqc). This prepends .venv to PATH
-# so we use .venv's Python and snakemake; qc's bin remains on PATH for fastqc/fastp.
+# Use project .venv Python/Snakemake if present.
 if [[ -f ".venv/bin/activate" ]]; then
   # shellcheck disable=SC1091
   source ".venv/bin/activate"
 fi
 
-echo "[$(date)] Starting Snakemake job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
+echo "[$(date)] Starting host removal: job ${SLURM_JOB_ID} array ${SLURM_ARRAY_TASK_ID} seed ${SEED_FILTER} on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
 
-# Remove stale lock from a previous killed/crashed run (no-op if no lock).
 python -m snakemake -s "${SMK_FILE}" --unlock || true
 
 python -m snakemake \
@@ -72,4 +65,4 @@ python -m snakemake \
   --rerun-incomplete \
   --printshellcmds
 
-echo "[$(date)] Snakemake job finished"
+echo "[$(date)] Host removal workflow finished"

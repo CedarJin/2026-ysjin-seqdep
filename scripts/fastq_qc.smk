@@ -18,8 +18,11 @@ LOG_ROOT = "logs/downsample"
 
 def sample_ids(omic):
     dirs = [d for d in glob.glob(f"rawdata/downsample/{omic}/*") if os.path.isdir(d)]
-    return sorted(s for s in (os.path.basename(d) for d in dirs) if s != "MT0002")
-## delete if s != MT0002 when you want to add it back
+    return sorted(os.path.basename(d) for d in dirs)
+
+
+def include_target(omic, sample, depth):
+    return not (omic == "metaT" and sample == "MT0002" and depth == "50M")
 
 SAMPLES = {omic: sample_ids(omic) for omic in OMICS}
 ACTIVE_OMICS = [omic for omic in OMICS if SAMPLES[omic]]
@@ -29,6 +32,7 @@ def raw_fastqc_htmls(omic):
     return [
         f"{QC_ROOT}/fastqc_raw/{omic}/{s}_{d}_seed{k}_R{r}_fastqc.html"
         for s in SAMPLES[omic] for d in DEPTHS for k in SEEDS for r in ("1", "2")
+        if include_target(omic, s, d)
     ]
 
 
@@ -36,6 +40,7 @@ def post_fastqc_htmls(omic):
     return [
         f"{QC_ROOT}/fastqc_post/{omic}/{s}_{d}_seed{k}_R{r}_fastqc.html"
         for s in SAMPLES[omic] for d in DEPTHS for k in SEEDS for r in ("1", "2")
+        if include_target(omic, s, d)
     ]
 
 

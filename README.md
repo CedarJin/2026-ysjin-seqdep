@@ -64,7 +64,24 @@ Files that already exist are skipped automatically (safe to re-run).
 
 ---
 
+
+## fastqc on raw data
+
+## Downsample -> 
+rawdata/metaT  -> rawdata/downsample/metaT
+rawdata/metaG  -> rawdata/downsample/metaG
+
+## fastqc and fastp on downsampled data 
+
+rawdata/downsample/metaT -> trimmed/downsample/fastp/metaT
+rawdata/downsample/metaG -> trimmed/downsample/fastp/metaG
+
+-> qc/downsample/fastqc_raw, qc/downsample/fastqc_post, qc/downsample/multiqc_raw, qc/downsample/multiqc_post
+
+
 ## Remove host genome
+trimmed/downsample/fastp/metaT -> cleandata/metaT
+trimmed/downsample/fastp/metaG -> cleandata/metaG
 
 ### Download the latest human reference genome from NCBI RefSeq
 (`GCF_000001405.40_GRCh38.p14`):
@@ -77,4 +94,13 @@ gunzip -f GCF_000001405.40_GRCh38.p14_genomic.fna.gz
 cd ../..
 ```
 
-### 
+###  
+```bash
+mkdir -p reference/human
+cd reference/human
+wget -O GCF_009914755.1_T2T-CHM13v2.0_genomic.fna.gz \ "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/009/914/755/GCF_009914755.1_T2T-CHM13v2.0/GCF_009914755.1_T2T-CHM13v2.0_genomic.fna.gz"
+
+gunzip -f GCF_009914755.1_T2T-CHM13v2.0_genomic.fna.gz
+cd ../..
+
+```

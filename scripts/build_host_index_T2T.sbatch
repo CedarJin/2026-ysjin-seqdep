@@ -1,27 +1,22 @@
 #!/bin/bash
 
-#SBATCH --job-name=rmhost_downsample_array
-#SBATCH --output=slurm_rmhost_downsample_array_%j.out
-#SBATCH --error=slurm_rmhost_downsample_array_%j.err
-#SBATCH --partition=low
+#SBATCH --job-name=build_T2T_bt2
+#SBATCH --output=slurm_build_T2T_bt2_%j.out
+#SBATCH --error=slurm_build_T2T_bt2_%j.err
+#SBATCH --partition=high
 #SBATCH --account=publicgrp
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=256G
-#SBATCH --time=24:00:00
-# #SBATCH --array=0-4
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --time=8:00:00
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
-#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-type=ALL
 
 set -euo pipefail
 
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="scripts/remove_host_downsample.smk"
-
-# Array seeds: remaining seeds after pilot seed11.
-# SEEDS=(11 22 33 44 55)
-# export SEED_FILTER="${SEEDS[${SLURM_ARRAY_TASK_ID}]}"
+SMK_FILE="scripts/remove_host_downsample_T2T.smk"
 
 cd "${PROJECT_DIR}"
 
@@ -54,15 +49,14 @@ if [[ -f ".venv/bin/activate" ]]; then
   source ".venv/bin/activate"
 fi
 
-echo "[$(date)] Starting host removal: job ${SLURM_JOB_ID} array ${SLURM_ARRAY_TASK_ID} seed ${SEED_FILTER} on ${SLURMD_NODENAME}"
+echo "[$(date)] Starting T2T bowtie2 index build: job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
-
-python -m snakemake -s "${SMK_FILE}" --unlock || true
 
 python -m snakemake \
   -s "${SMK_FILE}" \
+  build_host_index \
   --cores "${SLURM_CPUS_PER_TASK:-1}" \
   --rerun-incomplete \
   --printshellcmds
 
-echo "[$(date)] Host removal workflow finished"
+echo "[$(date)] T2T bowtie2 index build finished"
