@@ -1,14 +1,13 @@
 #!/bin/bash
 
-#SBATCH --job-name=rmhost_downsample_T2T_array
-#SBATCH --output=slurm_rmhost_downsample_T2T_array_%j.out
-#SBATCH --error=slurm_rmhost_downsample_T2T_array_%j.err
+#SBATCH --job-name=rmhost_downsample_T2T
+#SBATCH --output=slurm_rmhost_downsample_T2T_%j.out
+#SBATCH --error=slurm_rmhost_downsample_T2T_%j.err
 #SBATCH --partition=low
 #SBATCH --account=publicgrp
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=256G
 #SBATCH --time=24:00:00
-# #SBATCH --array=0-4
 
 ### Email notifications
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
@@ -19,9 +18,8 @@ set -euo pipefail
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
 SMK_FILE="scripts/remove_host_downsample_T2T.smk"
 
-# Array seeds: remaining seeds after pilot seed11.
-# SEEDS=(11 22 33 44 55)
-# export SEED_FILTER="${SEEDS[${SLURM_ARRAY_TASK_ID}]}"
+# Empty SEED_FILTER makes the Snakefile process all available seeds.
+export SEED_FILTER=""
 
 cd "${PROJECT_DIR}"
 
@@ -54,7 +52,7 @@ if [[ -f ".venv/bin/activate" ]]; then
   source ".venv/bin/activate"
 fi
 
-echo "[$(date)] Starting host removal: job ${SLURM_JOB_ID} array ${SLURM_ARRAY_TASK_ID} seed ${SEED_FILTER} on ${SLURMD_NODENAME}"
+echo "[$(date)] Starting host removal: job ${SLURM_JOB_ID} all seeds on ${SLURMD_NODENAME}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
 
 python -m snakemake -s "${SMK_FILE}" --unlock || true
