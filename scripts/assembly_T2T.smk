@@ -2,10 +2,11 @@ import glob
 import os
 import re
 
-# Minimal assembly workflow:
-# cleandata/downsample_* paired reads -> megahit -> contig index -> read remapping
+# Minimal assembly workflow for reads cleaned against the T2T host reference:
+# cleandata_T2T paired reads -> megahit -> contig index -> read remapping
 
-CLEANDATA_ROOT = "cleandata"
+CLEANDATA_ROOT = "cleandata_T2T"
+ASSEMBLY_ROOT = "assembly_T2T"
 OMICS = ["metaG", "metaT"]
 THREADS = int(os.environ.get("ASSEMBLY_THREADS", "8"))
 MIN_CONTIG_LEN = int(os.environ.get("MEGAHIT_MIN_CONTIG_LEN", "1000"))
@@ -35,7 +36,7 @@ def list_pairs(omic):
 
 PAIRS = {omic: list_pairs(omic) for omic in OMICS}
 ALL_BAMS = [
-    f"assembly/alignments/{omic}/{sample}/{prefix}.sorted.bam"
+    f"{ASSEMBLY_ROOT}/alignments/{omic}/{sample}/{prefix}.sorted.bam"
     for omic in OMICS
     for sample, prefix in PAIRS[omic]
 ]
@@ -50,66 +51,69 @@ rule all:
 
 rule megahit:
     input:
-        r1="cleandata/{omic}/{sample}/{prefix}_R1.fastq",
-        r2="cleandata/{omic}/{sample}/{prefix}_R2.fastq"
+        r1=f"{CLEANDATA_ROOT}/{{omic}}/{{sample}}/{{prefix}}_R1.fastq",
+        r2=f"{CLEANDATA_ROOT}/{{omic}}/{{sample}}/{{prefix}}_R2.fastq"
     output:
-        contigs="assembly/megahit/{omic}/{sample}/{prefix}/final.contigs.fa"
+        contigs=f"{ASSEMBLY_ROOT}/megahit/{{omic}}/{{sample}}/{{prefix}}/final.contigs.fa"
     log:
-        "logs/megahit/{omic}_{sample}_{prefix}.log"
+        "logs/megahit_T2T/{omic}_{sample}_{prefix}.log"
     threads:
         THREADS
     params:
         min_contig_len=MIN_CONTIG_LEN
     shell:
         """
-        mkdir -p $(dirname {output.contigs}) logs/megahit
+        mkdir -p $(dirname {output.contigs}) logs/megahit_T2T
         megahit -1 {input.r1} -2 {input.r2} -f -o $(dirname {output.contigs}) -t {threads} --min-contig-len {params.min_contig_len} >> {log} 2>&1
         """
 
 
 rule build_contig_index:
     input:
-        contigs="assembly/megahit/{omic}/{sample}/{prefix}/final.contigs.fa"
+        contigs=f"{ASSEMBLY_ROOT}/megahit/{{omic}}/{{sample}}/{{prefix}}/final.contigs.fa"
     output:
         expand(
-            "assembly/megahit/{{omic}}/{{sample}}/{{prefix}}/contigs.{ext}",
+            f"{ASSEMBLY_ROOT}/megahit/{{{{omic}}}}/{{{{sample}}}}/{{{{prefix}}}}/contigs.{{ext}}",
             ext=CONTIG_INDEX_EXT
         )
     params:
-        index_prefix="assembly/megahit/{omic}/{sample}/{prefix}/contigs"
+        index_prefix=f"{ASSEMBLY_ROOT}/megahit/{{omic}}/{{sample}}/{{prefix}}/contigs"
     log:
-        "logs/bowtie2/contig_index_{omic}_{sample}_{prefix}.log"
+        "logs/bowtie2_T2T/contig_index_{omic}_{sample}_{prefix}.log"
     threads:
         THREADS
     shell:
         """
-        mkdir -p logs/bowtie2
+        mkdir -p logs/bowtie2_T2T
         bowtie2-build --threads {threads} {input.contigs} {params.index_prefix} >> {log} 2>&1
         """
 
 
 rule map_reads_to_contigs:
     input:
-        r1="cleandata/{omic}/{sample}/{prefix}_R1.fastq",
-        r2="cleandata/{omic}/{sample}/{prefix}_R2.fastq",
+        r1=f"{CLEANDATA_ROOT}/{{omic}}/{{sample}}/{{prefix}}_R1.fastq",
+        r2=f"{CLEANDATA_ROOT}/{{omic}}/{{sample}}/{{prefix}}_R2.fastq",
         idx=expand(
-            "assembly/megahit/{{omic}}/{{sample}}/{{prefix}}/contigs.{ext}",
+            f"{ASSEMBLY_ROOT}/megahit/{{{{omic}}}}/{{{{sample}}}}/{{{{prefix}}}}/contigs.{{ext}}",
             ext=CONTIG_INDEX_EXT
         )
     output:
-        bam="assembly/alignments/{omic}/{sample}/{prefix}.sorted.bam",
-        bai="assembly/alignments/{omic}/{sample}/{prefix}.sorted.bam.bai"
+        bam=f"{ASSEMBLY_ROOT}/alignments/{{omic}}/{{sample}}/{{prefix}}.sorted.bam",
+        bai=f"{ASSEMBLY_ROOT}/alignments/{{omic}}/{{sample}}/{{prefix}}.sorted.bam.bai"
     params:
-        index_prefix="assembly/megahit/{omic}/{sample}/{prefix}/contigs"
+        index_prefix=f"{ASSEMBLY_ROOT}/megahit/{{omic}}/{{sample}}/{{prefix}}/contigs"
     log:
-        "logs/bowtie2/map_contigs_{omic}_{sample}_{prefix}.log"
+        "logs/bowtie2_T2T/map_contigs_{omic}_{sample}_{prefix}.log"
     threads:
         THREADS
     shell:
         """
-        mkdir -p assembly/alignments/{wildcards.omic}/{wildcards.sample} logs/bowtie2
+        mkdir -p "$(dirname '{output.bam}')" logs/bowtie2_T2T
+        SAM_TMP="$(dirname '{output.bam}')/.st_sort_tmp_{wildcards.prefix}"
+        rm -rf "$SAM_TMP" && mkdir -p "$SAM_TMP"
         bowtie2 -x {params.index_prefix} -1 {input.r1} -2 {input.r2} --threads {threads} --very-sensitive 2>> {log} | \
             samtools view -@ {threads} -b - | \
-            samtools sort -@ {threads} -o {output.bam} - >> {log} 2>&1
-        samtools index -@ {threads} {output.bam} {output.bai} >> {log} 2>&1
+            samtools sort -@ {threads} -T "$SAM_TMP/samtools_sort" -o '{output.bam}' - >> {log} 2>&1
+        samtools index -@ {threads} '{output.bam}' '{output.bai}' >> {log} 2>&1
+        rm -rf "$SAM_TMP"
         """

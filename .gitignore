@@ -21,6 +21,7 @@ annotation/
 CAMPER/
 cleandata/
 cleandata_T2T/
+assembly_T2T/
 
 # SRA Toolkit
 sratoolkit*/
