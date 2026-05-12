@@ -1,0 +1,24 @@
+# Config for rawdata downsampling workflow.
+# Workflow: scripts/testdata_download_downsample.smk
+
+# Input groups under rawdata/
+omics:
+  - metaG
+  - metaT
+
+# Random seeds for seqtk downsampling (reproducible).
+downsample_seeds:
+  - 11
+  - 22
+  - 33
+  - 44
+  - 55
+
+# Downsampling depth labels (read pairs per sample).
+downsample_depths:
+  - 50M
+
+
+# Threads requested by each downsample rule.
+# seqtk itself is single-threaded; parallelism comes from Snakemake --cores.
+downsample_threads: 1

@@ -57,7 +57,7 @@ MANIFEST
 .venv/
 venv/
 ENV/
-env/
+
 .uv-cache/
 
 # IDE
@@ -98,3 +98,5 @@ logs/
 ./snakemake-cache/
 
 slurm_logs/
+.codex
+
