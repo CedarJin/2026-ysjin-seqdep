@@ -1,5 +1,5 @@
-# Config for rawdata downsampling workflow.
-# Workflow: scripts/testdata_download_downsample.smk
+# Shared workflow config.
+# Used by scripts/testdata_download_downsample.smk and scripts/annotation_contigs.smk.
 
 # Input groups under rawdata/
 omics:
@@ -28,3 +28,27 @@ downsample_depths:
 # Threads requested by each downsample rule.
 # seqtk itself is single-threaded; parallelism comes from Snakemake --cores.
 downsample_threads: 1
+
+
+# T2T-cleaned assembly contig annotation workflow.
+# Workflow: scripts/annotation_contigs.smk
+
+# Root directory containing MEGAHIT outputs:
+#   {assembly_root}/megahit/{omic}/{sample}/{prefix}/final.contigs.fa
+assembly_root: assembly_T2T
+
+# Root directory for DRAM annotation/distill outputs.
+dram_contig_annotation_root: annotation/dram_contigs_T2T
+
+# Threads requested by each DRAM annotate rule.
+dram_threads: 8
+
+# Minimum contig length passed to DRAM.py annotate --min_contig_size.
+dram_min_contig_size: 1000
+
+# Whether to pass --use_camper to DRAM.py annotate.
+dram_use_camper: true
+
+# DRAM executable and config paths.
+dram_py: /home/jys0914/.conda/envs/dram/bin/DRAM.py
+dram_config: /home/jys0914/.conda/envs/dram/lib/python3.10/site-packages/mag_annotator/CONFIG

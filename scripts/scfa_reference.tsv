@@ -1,0 +1,50 @@
+scfa	pathway	step_order	role	essential	gene_symbol	ids	description	reference
+acetate	PTA-ACK	1	terminal	yes	pta	K00625,K13788,EC:2.3.1.8	phosphate acetyltransferase: acetyl-CoA -> acetyl-P	KEGG map00620
+acetate	PTA-ACK	2	terminal	yes	ackA	K00925,EC:2.7.2.1	acetate kinase: acetyl-P -> acetate + ATP	KEGG map00620
+acetate	Acs (AMP-forming)	1	terminal	yes	acs	K01895,EC:6.2.1.1	acetyl-CoA synthetase (AMP-forming); also activates acetate	KEGG map00620
+acetate	Acd (ADP-forming)	1	terminal	yes	acdA	K01905,K22224,EC:6.2.1.13	acetate-CoA ligase (ADP-forming); archaea / anaerobes	Schaefer 1993
+acetate	Acetyl-CoA hydrolase	1	terminal	yes	ach1	K01067,EC:3.1.2.1	acetyl-CoA hydrolase: acetyl-CoA -> acetate (rare in gut)	KEGG map00620
+acetate	Wood-Ljungdahl (acetogenesis)	1	central	yes	cooS/acsA	K00198,EC:1.2.7.4	CO dehydrogenase / acetyl-CoA synthase complex	Ragsdale 2008
+acetate	Wood-Ljungdahl (acetogenesis)	2	central	yes	acsB	K14138,K15022	acetyl-CoA synthase	Ragsdale 2008
+butyrate	beta-ox to butyryl-CoA	1	upstream	yes	thl/atoB	K00626,K00632,EC:2.3.1.9	acetyl-CoA acetyltransferase (beta-ketothiolase)	Vital 2014
+butyrate	beta-ox to butyryl-CoA	2	upstream	yes	hbd	K00074,EC:1.1.1.157	3-hydroxybutyryl-CoA dehydrogenase	Vital 2014
+butyrate	beta-ox to butyryl-CoA	3	upstream	yes	crt	K01692,K01825,EC:4.2.1.17	enoyl-CoA hydratase / crotonase	Vital 2014
+butyrate	beta-ox to butyryl-CoA	4	upstream	yes	bcd	K00248,EC:1.3.8.1	butyryl-CoA dehydrogenase	Vital 2014
+butyrate	beta-ox to butyryl-CoA	4b	upstream	no	etfA	K03521	electron transfer flavoprotein alpha (Bcd partner)	Vital 2014
+butyrate	beta-ox to butyryl-CoA	4c	upstream	no	etfB	K03522	electron transfer flavoprotein beta (Bcd partner)	Vital 2014
+butyrate	Buk path (terminal)	5	terminal	yes	ptb	K00634,EC:2.3.1.19	phosphate butyryltransferase: butyryl-CoA -> butyryl-P	Vital 2014
+butyrate	Buk path (terminal)	6	terminal	yes	buk	K00929,EC:2.7.2.7	butyrate kinase: butyryl-P -> butyrate + ATP	Vital 2014
+butyrate	But path (gut-dominant terminal)	5	terminal	yes	but/4hbt	K01034,K01035,EC:2.8.3.8	butyryl-CoA:acetate CoA-transferase (Faecalibacterium / Roseburia)	Vital 2014
+butyrate	4-aminobutyrate route (alt upstream)	upstream	upstream	no	abfT	K07749,K19709	4-hydroxybutyryl-CoA transferase / 4Ab pathway markers	Vital 2014
+butyrate	Lysine route (alt upstream)	upstream	upstream	no	kamA/kamD/kamE	K01843,K01844	lysine 2,3-aminomutase / 3,5-diaminohexanoate aminotransferase	Vital 2014
+butyrate	Glutarate route (alt upstream)	upstream	upstream	no	gctA/gctB	K01039,K01040	glutaconate CoA-transferase (alpha/beta)	Vital 2014
+propionate	Succinate path	1	upstream	yes	frdA	K00244,EC:1.3.5.4	fumarate reductase / SDH flavoprotein subunit	Reichardt 2014
+propionate	Succinate path	2	upstream	yes	sucD	K01902,EC:6.2.1.5	succinyl-CoA synthetase alpha	Reichardt 2014
+propionate	Succinate path	3	central	yes	mcmA	K01847,EC:5.4.99.2	methylmalonyl-CoA mutase, large subunit	Reichardt 2014
+propionate	Succinate path	4	central	yes	mcmB	K01848,K01849,EC:5.4.99.2	methylmalonyl-CoA mutase, small subunit	Reichardt 2014
+propionate	Succinate path	5	central	yes	mce	K05606,EC:5.1.99.1	methylmalonyl-CoA epimerase	Reichardt 2014
+propionate	Succinate path	6	central	yes	mmdA	K11264,K01571,K01572,EC:7.2.4.3	methylmalonyl-CoA decarboxylase alpha (carboxytransferase)	Reichardt 2014
+propionate	Succinate path	6b	central	yes	mmdD	K20509,EC:7.2.4.1	methylmalonyl-CoA decarboxylase, biotin carrier (carboxybiotin decarboxylase)	KEGG ko
+propionate	Succinate path	7	terminal	yes	pct/ackA-like	K01026,K00925,EC:2.8.3.1	propionate CoA-transferase OR propionate kinase activity of AckA	Reichardt 2014
+propionate	Acrylate path	1	upstream	yes	ldhD	K03778,K03777,EC:1.1.1.28	D-lactate dehydrogenase (lactate from pyruvate)	Reichardt 2014
+propionate	Acrylate path	2	central	yes	lcdA-C	K01010,K20940	lactoyl-CoA dehydratase (manual KEGG mapping is incomplete)	Reichardt 2014
+propionate	Acrylate path	3	terminal	yes	pct	K01026,EC:2.8.3.1	propionate CoA-transferase	Reichardt 2014
+propionate	1,2-PD path	1	upstream	yes	pduC	K13919	propanediol dehydratase large subunit	Reichardt 2014
+propionate	1,2-PD path	2	upstream	yes	pduD	K13920	propanediol dehydratase medium subunit	Reichardt 2014
+propionate	1,2-PD path	3	upstream	yes	pduE	K13921	propanediol dehydratase small subunit	Reichardt 2014
+propionate	1,2-PD path	4	central	yes	pduP	K13922,EC:1.2.1.87	CoA-dependent propionaldehyde dehydrogenase	Reichardt 2014
+propionate	1,2-PD path	5	central	yes	pduL	K13923	phosphate propanoyltransferase	KEGG ko
+propionate	1,2-PD path	6	terminal	yes	pduW/buk	K00929,EC:2.7.2.7	propionate kinase (shares EC with butyrate kinase)	KEGG ko
+lactate	L-lactate from pyruvate	1	terminal	yes	ldhA-L	K00016,K00101,EC:1.1.1.27,EC:1.1.2.3	L-lactate dehydrogenase	KEGG map00620
+lactate	D-lactate from pyruvate	1	terminal	yes	ldhA-D	K03778,K03777,EC:1.1.1.28,EC:1.1.5.12	D-lactate dehydrogenase	KEGG map00620
+lactate	D-lactate from methylglyoxal	1	upstream	no	mgsA	K01734,EC:4.2.3.3	methylglyoxal synthase	KEGG map00620
+lactate	D-lactate from methylglyoxal	2	central	no	gloA	K01759,EC:4.4.1.5	glyoxalase I	KEGG map00620
+ethanol	adhE bifunctional	1	terminal	yes	adhE	K04072,EC:1.1.1.1,EC:1.2.1.10	bifunctional acetaldehyde/alcohol dehydrogenase	KEGG map00010
+ethanol	NAD-dep adh	1	terminal	yes	adhP/yqhD	K00001,K00121,K13951,K13952,K13953,K13954,K13980,K18857	alcohol dehydrogenases (various)	KEGG
+ethanol	Acetaldehyde from acetyl-CoA	0	upstream	no	mhpF	K04073,EC:1.2.1.10	acetaldehyde dehydrogenase (acetylating)	KEGG map00620
+formate	PFL	1	terminal	yes	pflB	K00656,EC:2.3.1.54	pyruvate-formate lyase: pyruvate -> acetyl-CoA + formate	KEGG map00620
+formate	FHL (formate->H2+CO2)	1	upstream	no	fdhF	K00123,EC:1.17.1.9	formate dehydrogenase H (selenoprotein)	KEGG map00680
+formate	NAD-FDH	1	upstream	no	fdh	K05299,K22515,EC:1.17.1.9	NAD-dep formate dehydrogenase	KEGG map00680
+succinate	Reductive (oxaloacetate->malate->fumarate->succinate)	1	upstream	yes	mdh	K00024,EC:1.1.1.37	malate dehydrogenase	KEGG map00020
+succinate	Reductive (oxaloacetate->malate->fumarate->succinate)	2	upstream	yes	fumarase	K01676,K01677,K01678,EC:4.2.1.2	fumarase (fumA/fumB/fumC)	KEGG map00020
+succinate	Reductive (oxaloacetate->malate->fumarate->succinate)	3	terminal	yes	frdA	K00244,EC:1.3.5.4	fumarate reductase flavoprotein subunit	KEGG map00020

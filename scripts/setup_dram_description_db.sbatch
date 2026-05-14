@@ -51,6 +51,35 @@ if [[ ! -x "${DRAM_SETUP}" ]]; then
   exit 1
 fi
 
+check_description_db() {
+  local db_path="$1"
+  echo "[$(date)] Checking SQLite integrity for ${db_path}"
+  "${DRAM_ENV}/bin/python" - "${db_path}" <<'PY'
+import sqlite3
+import sys
+from pathlib import Path
+
+db_path = Path(sys.argv[1])
+if not db_path.is_file() or db_path.stat().st_size == 0:
+    raise SystemExit(f"ERROR: SQLite DB is missing or empty: {db_path}")
+
+conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+try:
+    integrity = [row[0] for row in conn.execute("PRAGMA integrity_check;")]
+    if integrity != ["ok"]:
+        print("\n".join(integrity), file=sys.stderr)
+        raise SystemExit(f"ERROR: SQLite integrity_check failed for {db_path}")
+
+    for table in ("peptidase_description", "pfam_description", "dbcan_description"):
+        count = conn.execute(f"SELECT COUNT(*) FROM {table};").fetchone()[0]
+        if count <= 0:
+            raise SystemExit(f"ERROR: table {table} is empty in {db_path}")
+        print(f"{table}: {count}")
+finally:
+    conn.close()
+PY
+}
+
 echo "[$(date)] Starting DRAM description DB setup on ${SLURMD_NODENAME:-unknown}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
 
@@ -78,9 +107,19 @@ echo "[$(date)] Populating DRAM description DB at ${TMP_DESC_DB}"
   --output_loc "${TMP_DESC_DB}" \
   --config_loc "${DRAM_CONFIG}"
 
-echo "[$(date)] Copying completed description DB to ${FINAL_DESC_DB}"
+check_description_db "${TMP_DESC_DB}"
+
+if [[ -s "${FINAL_DESC_DB}" ]]; then
+  BACKUP_DESC_DB="${FINAL_DESC_DB}.bak_${SLURM_JOB_ID:-manual}"
+  echo "[$(date)] Backing up current description DB to ${BACKUP_DESC_DB}"
+  cp -f "${FINAL_DESC_DB}" "${BACKUP_DESC_DB}"
+fi
+
+echo "[$(date)] Copying checked description DB to ${FINAL_DESC_DB}"
 cp -f "${TMP_DESC_DB}" "${FINAL_DESC_DB}.new"
+check_description_db "${FINAL_DESC_DB}.new"
 mv -f "${FINAL_DESC_DB}.new" "${FINAL_DESC_DB}"
+check_description_db "${FINAL_DESC_DB}"
 
 echo "[$(date)] Updating DRAM CONFIG to final description DB path"
 "${DRAM_ENV}/bin/python" - <<PY
