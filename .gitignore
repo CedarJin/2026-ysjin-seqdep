@@ -22,6 +22,10 @@ CAMPER/
 cleandata/
 cleandata_T2T/
 assembly_T2T/
+abundance/
+SAP/*
+!SAP/docs/
+!SAP/docs/**
 
 # SRA Toolkit
 sratoolkit*/

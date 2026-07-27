@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=dram_distill_rerun_s11
-#SBATCH --output=slurm_dram_distill_rerun_MG0001_2M_seed11_%j.out
-#SBATCH --error=slurm_dram_distill_rerun_MG0001_2M_seed11_%j.err
+#SBATCH --job-name=metaphlan_T2T_test
+#SBATCH --output=slurm_metaphlan_T2T_MG0001_2M_seed11_%j.out
+#SBATCH --error=slurm_metaphlan_T2T_MG0001_2M_seed11_%j.err
 #SBATCH --partition=high
 #SBATCH --account=publicgrp
 #SBATCH --cpus-per-task=8
@@ -13,29 +13,32 @@
 #SBATCH --mail-user=ysjin@health.ucdavis.edu
 #SBATCH --mail-type=ALL
 
+# Test MetaPhlAn profiling on the first metaG sample/prefix:
+#   cleandata_T2T/metaG/MG0001/MG0001_2M_seed11_{R1,R2}.fastq
+# Submit: sbatch scripts/run_metaphlan_T2T_MG0001_2M_seed11.sbatch
+
 set -euo pipefail
 
 PROJECT_DIR="/home/jys0914/2026-ysjin-seqdep"
-SMK_FILE="scripts/annotation_contigs_abundance.smk"
+SMK_FILE="scripts/metaphlan_T2T.smk"
 
 TEST_OMIC="metaG"
 TEST_SAMPLE="MG0001"
 TEST_PREFIX="MG0001_2M_seed11"
-SAMPLE_ROOT="annotation/dram_contigs_T2T/${TEST_OMIC}/${TEST_SAMPLE}/${TEST_PREFIX}"
-TARGET="${SAMPLE_ROOT}/distillate/genome_stats.tsv"
+
+R1="cleandata_T2T/${TEST_OMIC}/${TEST_SAMPLE}/${TEST_PREFIX}_R1.fastq"
+R2="cleandata_T2T/${TEST_OMIC}/${TEST_SAMPLE}/${TEST_PREFIX}_R2.fastq"
+TARGET="taxonomy/metaphlan_T2T/${TEST_OMIC}/${TEST_SAMPLE}/${TEST_PREFIX}/profile.tsv"
 
 cd "${PROJECT_DIR}"
 
 export XDG_CACHE_HOME="${PROJECT_DIR}/.cache"
-mkdir -p "${XDG_CACHE_HOME}" logs/dram_contigs_T2T
+mkdir -p "${XDG_CACHE_HOME}" logs/metaphlan_T2T
 
-if [[ ! -s "${SAMPLE_ROOT}/annotations.tsv" ]]; then
-  echo "ERROR: missing annotation input: ${SAMPLE_ROOT}/annotations.tsv" >&2
-  exit 1
-fi
-
-if [[ ! -s "${SAMPLE_ROOT}/trnas.tsv" || ! -s "${SAMPLE_ROOT}/rrnas.tsv" ]]; then
-  echo "ERROR: missing tRNA/rRNA input under ${SAMPLE_ROOT}" >&2
+if [[ ! -s "${R1}" || ! -s "${R2}" ]]; then
+  echo "ERROR: expected paired FASTQ not found or empty:" >&2
+  echo "  ${R1}" >&2
+  echo "  ${R2}" >&2
   exit 1
 fi
 
@@ -56,21 +59,21 @@ else
   exit 1
 fi
 
-conda activate dram
+# metaphlan env must include snakemake-minimal (env/env_metaphlan.yaml).
+conda activate metaphlan
 
-echo "[$(date)] Starting DRAM distill rerun ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
-echo "Sample: ${TEST_OMIC}/${TEST_SAMPLE}/${TEST_PREFIX}"
-echo "Target: ${TARGET}"
+echo "[$(date)] Starting MetaPhlAn T2T test job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
+echo "Input R1: ${R1}"
+echo "Input R2: ${R2}"
+echo "Target:   ${TARGET}"
 echo "CPUs: ${SLURM_CPUS_PER_TASK:-1}, MEM: ${SLURM_MEM_PER_NODE:-unknown}"
 
 python -m snakemake \
   -s "${SMK_FILE}" \
   --cores "${SLURM_CPUS_PER_TASK:-1}" \
-  --config dram_threads="${SLURM_CPUS_PER_TASK:-8}" \
-  --forcerun fix_dram_contig_inputs_for_distill prepare_contig_distill_config_with_camper dram_contig_distill \
   --rerun-incomplete \
   --nolock \
   --printshellcmds \
   "${TARGET}"
 
-echo "[$(date)] DRAM distill rerun finished"
+echo "[$(date)] MetaPhlAn T2T test job finished"

@@ -1,0 +1,21 @@
+# Conda environment for taxonomic profiling with MetaPhlAn 4.
+# https://github.com/biobakery/MetaPhlAn
+# Create with: conda env create -f env/env_metaphlan.yaml -n metaphlan
+# Activate with: conda activate metaphlan
+# Download marker DB (once): metaphlan --install --bowtie2db <db_dir>
+
+
+# conda env update -f env/env_metaphlan.yaml -n metaphlan
+
+
+name: metaphlan
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - metaphlan=4.2.4
+  - bowtie2
+  - samtools
+  - snakemake-minimal

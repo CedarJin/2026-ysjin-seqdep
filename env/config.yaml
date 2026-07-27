@@ -1,5 +1,6 @@
 # Shared workflow config.
-# Used by scripts/testdata_download_downsample.smk and scripts/annotation_contigs.smk.
+# Used by scripts/testdata_download_downsample.smk and
+# scripts/annotation_contigs_abundance.smk.
 
 # Input groups under rawdata/
 omics:
@@ -30,8 +31,8 @@ downsample_depths:
 downsample_threads: 1
 
 
-# T2T-cleaned assembly contig annotation workflow.
-# Workflow: scripts/annotation_contigs.smk
+# T2T-cleaned assembly contig annotation + abundance workflow.
+# Workflow: scripts/annotation_contigs_abundance.smk
 
 # Root directory containing MEGAHIT outputs:
 #   {assembly_root}/megahit/{omic}/{sample}/{prefix}/final.contigs.fa
@@ -39,6 +40,12 @@ assembly_root: assembly_T2T
 
 # Root directory for DRAM annotation/distill outputs.
 dram_contig_annotation_root: annotation/dram_contigs_T2T
+
+# Root directory for abundance outputs (featureCounts + TPM tables).
+# Mirrors the {omic}/{sample}/{prefix} layout of the annotation tree, kept
+# at the top level so DRAM.py annotate's `rm -rf` on the sample dir never
+# wipes the abundance results.
+dram_contig_abundance_root: abundance/dram_contigs_T2T
 
 # Threads requested by each DRAM annotate rule.
 dram_threads: 8
@@ -52,3 +59,42 @@ dram_use_camper: true
 # DRAM executable and config paths.
 dram_py: /home/jys0914/.conda/envs/dram/bin/DRAM.py
 dram_config: /home/jys0914/.conda/envs/dram/lib/python3.10/site-packages/mag_annotator/CONFIG
+
+# Python interpreter from the dram env (used for verify / scfa_extra /
+# aggregate steps that import mag_annotator).
+dram_python: /home/jys0914/.conda/envs/dram/bin/python
+
+# Read alignments root used by featureCounts.
+# Expected layout: {align_root}/{omic}/{sample}/{prefix}.sorted.bam
+align_root: assembly_T2T/alignments
+
+# featureCounts binary (env/env_quant.yaml -> conda env 'quant').
+featurecounts_bin: /quobyte/angelazgrp/ysjin/.conda/envs/quant/bin/featureCounts
+
+# Threads requested by featureCounts.
+featurecounts_threads: 8
+
+# Curated SCFA reference table used by extra_scfa_check / aggregate.
+scfa_reference: scripts/scfa_reference.tsv
+
+# Curated SAP gene-curation module reference tables (built by
+# scripts/build_curation_references.py from SAP/gene_curation_*.xlsx).
+# Two ID-matching variants are written under curation_refs/{id_only,id_ec}/:
+#   id_only  — KO + CAZy + CAMPER D-id (no EC)
+#   id_ec    — KO + EC + CAZy + CAMPER D-id
+curation_refs_dir: scripts/curation_refs
+curation_id_variants:
+  - id_only
+  # id_ec refs live under scripts/curation_refs/id_ec/ for optional sensitivity runs.
+curation_names:
+  - carotenoids
+  - lbp
+  - lps
+  - polyphenol
+  - bile_acid
+  - scfa48
+
+# Cross-subsample long tables (separate file per id_variant):
+#   all_modules_per_module_long_id_only.tsv
+#   all_modules_per_module_long_id_ec.tsv
+curation_summary: annotation/dram_contigs_T2T/curation_module_summary/all_modules_per_module_long_id_only.tsv

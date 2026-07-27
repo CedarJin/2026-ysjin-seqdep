@@ -1,0 +1,49 @@
+feature_class	module	feature	gene_symbol	ids	n_ids	ko_ids	ec_ids	cazy_ids	camper_ids	confidence	description	reference
+SCFA48	butyrate:P1 Acetyl-CoA	BUT-01	Thl	K00626,K00632	2	K00626,K00632	EC:2.3.1.9			Multiple; see expanded mapping	Acetyl-CoA acetyltransferase / thiolase	Frolova 2022; Vital 2014; Louis & Flint 2017
+SCFA48	butyrate:P1 Acetyl-CoA	BUT-02	Hbd	K00074	1	K00074	EC:1.1.1.157			K00074	3-hydroxybutyryl-CoA dehydrogenase	Frolova 2022; Vital 2014
+SCFA48	butyrate:P1 Acetyl-CoA	BUT-03	Crt	K01692,K01825	2	K01692,K01825	EC:4.2.1.17,EC:4.2.1.55			Multiple; see expanded mapping	3-hydroxybutyryl-CoA dehydratase / crotonase	Frolova 2022; Vital 2014
+SCFA48	butyrate:Shared terminal core	BUT-04	Bcd-EtfAB	K00248,K03521,K03522	3	K00248,K03521,K03522	EC:1.3.8.1			Multiple; see expanded mapping	Butyryl-CoA dehydrogenase–electron transfer flavoprotein complex	Frolova 2022; Vital 2014; Louis & Flint 2017
+SCFA48	butyrate:P2 Succinate/4-hydroxybutyrate	BUT-05	AldD		0		EC:1.2.1.76			No specific KO identified	Succinic semialdehyde dehydrogenase, CoA-acylating	Frolova 2022
+SCFA48	butyrate:P2 Succinate/4-hydroxybutyrate	BUT-06	AbfH	K00043	1	K00043	EC:1.1.1.61			K00043	4-hydroxybutyrate dehydrogenase	Frolova 2022
+SCFA48	butyrate:P2 Succinate/4-hydroxybutyrate	BUT-07	Cat		0		EC:2.8.3.-			No specific KO identified	4-hydroxybutyrate CoA-transferase	Frolova 2022
+SCFA48	butyrate:P2 Succinate/4-hydroxybutyrate	BUT-08	AbfD	K14534	1	K14534	EC:4.2.1.120			K14534	4-hydroxybutyryl-CoA dehydratase	Frolova 2022; Vital 2014
+SCFA48	butyrate:P3 Glutamate/glutarate	BUT-09	GctA	K01039	1	K01039	EC:2.8.3.12			K01039	Glutaconate CoA-transferase subunit A	Frolova 2022; Vital 2014
+SCFA48	butyrate:P3 Glutamate/glutarate	BUT-10	GctB	K01040	1	K01040	EC:2.8.3.12			K01040	Glutaconate CoA-transferase subunit B	Frolova 2022; Vital 2014
+SCFA48	butyrate:P3 Glutamate/glutarate	BUT-11	HgdABC		0		EC:4.2.1.167			No confidently specific KO set identified	2-hydroxyglutaryl-CoA dehydratase complex	Frolova 2022; Vital 2014
+SCFA48	butyrate:P3 Glutamate/glutarate	BUT-12	GcdABC		0		EC:7.2.4.5			No confidently specific KO set identified	Glutaconyl-CoA decarboxylase complex	Frolova 2022; Vital 2014
+SCFA48	butyrate:P4 Lysine	BUT-13	KamA	K01843	1	K01843	EC:5.4.3.2			K01843	L-lysine 2,3-aminomutase	Frolova 2022; Vital 2014
+SCFA48	butyrate:P4 Lysine	BUT-14	KamDE	K01844	1	K01844	EC:5.4.3.3			K01844	L-lysine 5,6-aminomutase complex	Frolova 2022; Vital 2014
+SCFA48	butyrate:P4 Lysine	BUT-15	KDD		0		EC:1.4.1.-			No specific KO identified	3,5-diaminohexanoate dehydrogenase	Frolova 2022; Vital 2014
+SCFA48	butyrate:P4 Lysine	BUT-16	KCE		0		EC:2.3.1.247			No specific KO identified	3-keto-5-aminohexanoate cleavage enzyme	Frolova 2022; Vital 2014
+SCFA48	butyrate:P4 Lysine	BUT-17	KAL		0		EC:4.3.1.14			No specific KO identified	3-aminobutyryl-CoA ammonia-lyase	Frolova 2022; Vital 2014
+SCFA48	butyrate:Terminal: CoA-transferase	BUT-18	CtfAB	K01027,K01028	2	K01027,K01028	EC:2.8.3.9			Multiple; see expanded mapping	Acetoacetyl-CoA / butyryl-CoA transferase complex	Frolova 2022; Vital 2014; Louis & Flint 2017
+SCFA48	butyrate:Terminal: CoA-transferase	BUT-19	But		0		EC:2.8.3.8			No single specific KO identified	Butyryl-CoA:acetate CoA-transferase	Frolova 2022; Vital 2014; Louis & Flint 2017
+SCFA48	butyrate:Terminal: kinase branch	BUT-20	Ptb	K00634	1	K00634	EC:2.3.1.19			K00634	Phosphate butyryltransferase	Frolova 2022; Vital 2014; Louis & Flint 2017
+SCFA48	butyrate:Terminal: kinase branch	BUT-21	Buk	K00929	1	K00929	EC:2.7.2.7			K00929	Butyrate kinase	Frolova 2022; Vital 2014; Louis & Flint 2017
+SCFA48	propionate:P1 Succinate	PRO-01	PST	K01026	1	K01026	EC:2.8.3.1			K01026	Propionate/succinate CoA-transferase	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P1 Succinate	PRO-02	AarC	K18118	1	K18118	EC:2.8.3.18			K18118	Succinyl-CoA:acetate CoA-transferase	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-03	MutAB	K01847,K01848,K01849	3	K01847,K01848,K01849	EC:5.4.99.2			Multiple; see expanded mapping	Methylmalonyl-CoA mutase, canonical form	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P1 Succinate	PRO-04	MutA2-MutC		0		EC:5.4.99.2			No confidently specific KO set identified	Methylmalonyl-CoA mutase, split-domain alternative	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-05	Mce	K05606	1	K05606	EC:5.1.99.1			K05606	Methylmalonyl-CoA epimerase	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P1 Succinate	PRO-06	MmdA	K01571,K01572,K11264	3	K01571,K01572,K11264	EC:7.2.4.3			Multiple; see expanded mapping	Methylmalonyl-CoA decarboxylase alpha/carboxytransferase component	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-07	MmdB	K01572	1	K01572	EC:7.2.4.3			K01572	Methylmalonyl-CoA decarboxylase beta subunit	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-08	MmdC	K01573	1	K01573	EC:7.2.4.3			K01573	Methylmalonyl-CoA decarboxylase gamma subunit	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-09	MmdD	K20509	1	K20509	EC:7.2.4.1			K20509	Methylmalonyl-CoA decarboxylase biotin-carrier component	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-10	MmdE		0		EC:7.2.4.3			No specific KO confidently assigned	Methylmalonyl-CoA decarboxylase accessory/component E	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-11	Mmd	K01633	1	K01633	EC:4.1.1.41			K01633	Single-subunit methylmalonyl-CoA decarboxylase	Frolova 2022
+SCFA48	propionate:P1 Succinate	PRO-12	MMCT	K00627,K00628	2	K00627,K00628	EC:2.1.3.1			Multiple; see expanded mapping	Methylmalonyl-CoA:pyruvate transcarboxylase complex	Frolova 2022
+SCFA48	propionate:P2 Lactate/acrylate	PRO-13	Pct	K01026	1	K01026	EC:2.8.3.1			K01026	Propionate CoA-transferase / lactoyl-CoA-forming CoA-transferase	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P2 Lactate/acrylate	PRO-14	LcdABC		0		EC:4.2.1.54			No specific KO set identified	Lactoyl-CoA dehydratase complex	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P2 Lactate/acrylate	PRO-15	LcdX		0		EC:4.2.1.54			No specific KO identified	Predicted alternative lactoyl-CoA dehydratase	Frolova 2022
+SCFA48	propionate:P2 Lactate/acrylate	PRO-16	Acr		0		EC:1.3.1.95			No single specific KO identified	Acryloyl-CoA reductase	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P3 1,2-Propanediol	PRO-17	PduCDE	K01699,K01700,K01701	3	K01699,K01700,K01701	EC:4.2.1.28			Multiple; see expanded mapping	B12-dependent propanediol dehydratase complex	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P3 1,2-Propanediol	PRO-18	PduC2		0		EC:4.2.1.28			No single specific KO identified	B12-independent propanediol dehydratase, glycyl-radical enzyme	Frolova 2022
+SCFA48	propionate:P3 1,2-Propanediol	PRO-19	PduD2		0					No single specific KO identified	Radical-SAM activating enzyme for PduC2	Frolova 2022
+SCFA48	propionate:P3 1,2-Propanediol	PRO-20	PduP	K04072	1	K04072	EC:1.2.1.87			K04072	Propanal dehydrogenase, CoA-acylating	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P3 1,2-Propanediol	PRO-21	PduL	K13923	1	K13923	EC:2.3.1.222			K13923	Phosphate propanoyltransferase	Frolova 2022; Louis & Flint 2017
+SCFA48	propionate:P3 1,2-Propanediol	PRO-22	PduW	K00929	1	K00929	EC:2.7.2.15,EC:2.7.2.7			K00929	Propionate kinase	Frolova 2022; Louis & Flint 2017
+SCFA48	acetate:PTA-ACK	OTH-01	Pta	K00625	1	K00625	EC:2.3.1.8			K00625	Phosphate acetyltransferase	Frolova 2022
+SCFA48	acetate:PTA-ACK	OTH-02	AckA	K00925	1	K00925	EC:2.7.2.1			K00925	Acetate kinase	Frolova 2022
+SCFA48	formate:Pyruvate formate-lyase	OTH-03	PflB/PflA	K00656,K04069	2	K00656,K04069	EC:2.3.1.54			Multiple; see expanded mapping	Pyruvate formate-lyase and activating enzyme	Frolova 2022
+SCFA48	l-lactate:Pyruvate to L-lactate	OTH-04	LdhA-L	K00016,K00101	2	K00016,K00101	EC:1.1.1.27,EC:1.1.2.3			Multiple; see expanded mapping	L-lactate dehydrogenase	Frolova 2022
+SCFA48	d-lactate:Pyruvate to D-lactate	OTH-05	LdhA-D	K03777,K03778	2	K03777,K03778	EC:1.1.1.28,EC:1.1.5.12			Multiple; see expanded mapping	D-lactate dehydrogenase	Frolova 2022

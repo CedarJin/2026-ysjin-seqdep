@@ -104,7 +104,10 @@ def gene_tpm_to_id_tpm(
     out = pd.DataFrame({"id": sorted(id_tpm.keys())})
     out["tpm"] = out["id"].map(id_tpm)
     out["n_genes"] = out["id"].map(id_genecount)
-    return out.sort_values("tpm", ascending=False).reset_index(drop=True)
+    # Stable: tie-break on `id` so output is bytewise reproducible.
+    return out.sort_values(
+        ["tpm", "id"], ascending=[False, True]
+    ).reset_index(drop=True)
 
 
 def split_ids_string(s) -> set:
@@ -140,7 +143,11 @@ def summarise_scfa_abundance(scfa_ref: pd.DataFrame, id_tpm_map: dict):
     """
     per_step = []
     for _, row in scfa_ref.iterrows():
-        ids = split_ids_string(row.get("ids", ""))
+        # `split_ids_string` returns a set, which has hash-randomised
+        # iteration order. Sort before summing so floating-point round-off
+        # is identical across runs (was the source of the 1.42e-14 epsilon
+        # drift we previously saw in scfa_per_step_abundance.tsv).
+        ids = sorted(split_ids_string(row.get("ids", "")))
         step_tpm = float(sum(id_tpm_map.get(i, 0.0) for i in ids))
         per_step.append({
             **row.to_dict(),
@@ -246,7 +253,9 @@ def summarise_kegg_module_abundance(
             "module_min_step_tpm": float(min(step_tpms)),
             "module_weighted_tpm": float(sum(step_tpms) * completeness),
         })
-    return pd.DataFrame(rows).sort_values("module_weighted_tpm", ascending=False)
+    return pd.DataFrame(rows).sort_values(
+        ["module_weighted_tpm", "module"], ascending=[False, True]
+    ).reset_index(drop=True)
 
 
 def summarise_etc_complex_abundance(
@@ -322,7 +331,9 @@ def summarise_etc_complex_abundance(
             "best_path_kos": ",".join(best["kos"]),
             "best_path_present_kos": ",".join(sorted(best["present"])),
         })
-    return pd.DataFrame(rows).sort_values("module_weighted_tpm", ascending=False)
+    return pd.DataFrame(rows).sort_values(
+        ["module_weighted_tpm", "complex_module_name"], ascending=[False, True]
+    ).reset_index(drop=True)
 
 
 def summarise_functional_abundance(
@@ -399,8 +410,9 @@ def summarise_functional_abundance(
             "per_rule_detail": " || ".join(rule_details),
         })
     return pd.DataFrame(rows).sort_values(
-        ["category", "function_weighted_tpm"], ascending=[True, False]
-    )
+        ["category", "function_weighted_tpm", "function_name"],
+        ascending=[True, False, True],
+    ).reset_index(drop=True)
 
 
 def main():

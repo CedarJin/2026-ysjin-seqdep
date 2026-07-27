@@ -16,7 +16,13 @@
 #   2) aggregate gene counts -> TPM -> ID TPM -> SCFA + KEGG module abundance
 #
 # Outputs go to:
-#   annotation/dram_contigs_T2T/metaG/MG0001/MG0001_2M_seed11/abundance/
+#   abundance/dram_contigs_T2T/metaG/MG0001/MG0001_2M_seed11/
+#
+# NOTE: This standalone script is superseded by the snakemake workflow in
+#   scripts/annotation_contigs_abundance.smk
+# which runs annotate -> distill -> verify -> SCFA -> featureCounts ->
+# aggregate as a single DAG. Keep this around only for ad-hoc quantification
+# tests against an existing DRAM annotation.
 
 set -euo pipefail
 
@@ -34,7 +40,7 @@ GFF="${PROJECT_DIR}/annotation/dram_contigs_T2T/${OMIC}/${SAMPLE}/${PREFIX}/gene
 ANNOTATIONS="${PROJECT_DIR}/annotation/dram_contigs_T2T/${OMIC}/${SAMPLE}/${PREFIX}/distill_input_fixed/annotations.tsv"
 DISTILL_CONFIG="${PROJECT_DIR}/annotation/dram_contigs_T2T/${OMIC}/${SAMPLE}/${PREFIX}/distill_input_fixed/distill_with_camper.config.json"
 SCFA_REF="${PROJECT_DIR}/scripts/scfa_reference.tsv"
-OUT_DIR="${PROJECT_DIR}/annotation/dram_contigs_T2T/${OMIC}/${SAMPLE}/${PREFIX}/abundance"
+OUT_DIR="${PROJECT_DIR}/abundance/dram_contigs_T2T/${OMIC}/${SAMPLE}/${PREFIX}"
 mkdir -p "${OUT_DIR}"
 
 for f in "${BAM}" "${GFF}" "${ANNOTATIONS}" "${DISTILL_CONFIG}" "${SCFA_REF}"; do
@@ -70,12 +76,30 @@ if ! conda env list | awk '{print $1}' | grep -qx "${QUANT_ENV}"; then
 fi
 
 # ---------- step 1: featureCounts ----------
+# DRAM prodigal output prefixes every contig name with "final.contigs_" but
+# the bowtie2 index used to build the BAM keeps the bare MEGAHIT names
+# (k141_<n>). Generate a normalised GFF on the fly so featureCounts can
+# match chromosomes; we keep the gene ID column unchanged so downstream
+# aggregation still joins on the DRAM annotations.tsv gene_id.
+NORM_GFF="${OUT_DIR}/genes.normalized.gff"
+echo "[$(date)] Normalising GFF chromosome names -> ${NORM_GFF}"
+awk -F'\t' -v OFS='\t' '
+    /^#/ {print; next}
+    { sub(/^final\.contigs_/, "", $1); print }
+' "${GFF}" > "${NORM_GFF}"
+
+# Sanity check the rename worked and now matches the BAM SQ names.
+# Use awk-internal limit instead of `| head -N` so we don't trip SIGPIPE
+# (141) under `set -euo pipefail`.
+echo "[$(date)] GFF first seqids:"
+awk -F'\t' '$1 !~ /^#/ { print $1; n++; if (n==3) exit }' "${NORM_GFF}"
+
 GENE_COUNTS="${OUT_DIR}/gene_counts.tsv"
 echo "[$(date)] Running featureCounts (threads=${THREADS})"
 
 conda activate "${QUANT_ENV}"
 featureCounts \
-  -a "${GFF}" \
+  -a "${NORM_GFF}" \
   -F GFF \
   -t CDS \
   -g ID \
@@ -88,6 +112,8 @@ featureCounts \
 
 head -2 "${GENE_COUNTS}"
 echo "[$(date)] featureCounts done -> ${GENE_COUNTS}"
+echo "[$(date)] featureCounts summary:"
+cat "${GENE_COUNTS}.summary"
 
 # ---------- step 2: aggregate (TPM -> ID -> module) ----------
 # Pull the three DRAM sheet paths from the distill config so we
